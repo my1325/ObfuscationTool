@@ -9,7 +9,7 @@ import Foundation
 import FilePath
 
 public protocol ProcessingFilePlugin {
-    func processingManager(_ manager: ProcessingManager, processedFile file: FilePath) async -> ProcessingFile
+    func processingManager(_ manager: ProcessingManager, processedFile file: FilePath) -> ProcessingFile
 }
 
 public final class ProcessingManager {
@@ -45,36 +45,36 @@ public final class ProcessingManager {
         pluginCache[fileType] = plugin
     }
     
-    public func processing() async -> [ProcessedFile] {
+    public func processing() -> [ProcessedFile] {
         guard path.isExists else { return [] }
         if path.isFile {
-            if let processedFile = await processingFile(path as! FilePath) {
+            if let processedFile = processingFile(path as! FilePath) {
                 return [processedFile]
             }
             return []
         } else {
-            return await processingDirectory(path as! DirectoryPath)
+            return processingDirectory(path as! DirectoryPath)
         }
     }
     
-    public func processingFile(_ filePath: FilePath) async -> ProcessedFile? {
+    public func processingFile(_ filePath: FilePath) -> ProcessedFile? {
         let fileType = FileType(ext: filePath.pathExtension)
         if let handlePlugin = pluginCache[fileType] {
-            let processingFile = await handlePlugin.processingManager(self, processedFile: filePath)
+            let processingFile = handlePlugin.processingManager(self, processedFile: filePath)
             return ProcessedFile(processingFile: processingFile)
         }
         return nil
     }
     
-    public func processingDirectory(_ direcotryPath: DirectoryPath) async -> [ProcessedFile] {
+    public func processingDirectory(_ direcotryPath: DirectoryPath) -> [ProcessedFile] {
         var processedFiles: [ProcessedFile] = []
         for path in direcotryPath.directoryIterator() {
             if path.isFile {
-                if let processedFile = await processingFile(path as! FilePath) {
+                if let processedFile = processingFile(path as! FilePath) {
                     processedFiles.append(processedFile)
                 }
             } else {
-                processedFiles.append(contentsOf: await processingDirectory(path as! DirectoryPath))
+                processedFiles.append(contentsOf: processingDirectory(path as! DirectoryPath))
             }
         }
         return processedFiles

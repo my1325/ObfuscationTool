@@ -6,13 +6,26 @@
 //
 
 import Cocoa
-import ProcessingFiles
+//import ProcessingFiles
+import SwiftString
 
-class ViewController: NSViewController {
+class BaseViewController: NSViewController {
+    class var abc: Int { 1 }
+}
 
+class ViewController: BaseViewController {
+
+    override class var abc: Int
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        let string = SwiftString(string: "hello world hello world hello worldhello world hello world")
+        do {
+            let replaceString = try string.replaceWithMatches("wor", with: "aaa")
+            print(replaceString.string)
+        } catch {
+            print(error)
+        }
     }
 
     override var representedObject: Any? {
