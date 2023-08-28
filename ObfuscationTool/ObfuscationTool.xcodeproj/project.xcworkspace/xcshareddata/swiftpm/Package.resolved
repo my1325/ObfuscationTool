@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "FilePath",
+        "repositoryURL": "https://github.com/my1325/FilePath.git",
+        "state": {
+          "branch": "main",
+          "revision": "69a31ba027d160d5509668dc5871ae1cf4a35b29",
+          "version": null
+        }
+      },
+      {
+        "package": "SwiftString",
+        "repositoryURL": "https://github.com/my1325/SwiftString.git",
+        "state": {
+          "branch": "main",
+          "revision": "eae9f02f05f1072a667a28c80fef284daeabe7c0",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
