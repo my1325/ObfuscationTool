@@ -12,6 +12,10 @@
 		B7587B512A8F6CD600C78D4D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7587B502A8F6CD600C78D4D /* ViewController.swift */; };
 		B7587B532A8F6CD700C78D4D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B7587B522A8F6CD700C78D4D /* Assets.xcassets */; };
 		B7587B562A8F6CD700C78D4D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B7587B542A8F6CD700C78D4D /* Main.storyboard */; };
+		B7EC29E22A9F46510094D97D /* SwiftOperators in Frameworks */ = {isa = PBXBuildFile; productRef = B7EC29E12A9F46510094D97D /* SwiftOperators */; };
+		B7EC29E42A9F46510094D97D /* SwiftParser in Frameworks */ = {isa = PBXBuildFile; productRef = B7EC29E32A9F46510094D97D /* SwiftParser */; };
+		B7EC29E62A9F46510094D97D /* SwiftSyntax in Frameworks */ = {isa = PBXBuildFile; productRef = B7EC29E52A9F46510094D97D /* SwiftSyntax */; };
+		B7F935502A9DFE6B001DCD6E /* SourceKittenFramework in Frameworks */ = {isa = PBXBuildFile; productRef = B7F9354F2A9DFE6B001DCD6E /* SourceKittenFramework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,7 +33,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7EC29E22A9F46510094D97D /* SwiftOperators in Frameworks */,
+				B7EC29E42A9F46510094D97D /* SwiftParser in Frameworks */,
+				B7EC29E62A9F46510094D97D /* SwiftSyntax in Frameworks */,
 				0FC7156E2A9CC414000BF135 /* SwiftString in Frameworks */,
+				B7F935502A9DFE6B001DCD6E /* SourceKittenFramework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +99,10 @@
 			name = ObfuscationTool;
 			packageProductDependencies = (
 				0FC7156D2A9CC414000BF135 /* SwiftString */,
+				B7F9354F2A9DFE6B001DCD6E /* SourceKittenFramework */,
+				B7EC29E12A9F46510094D97D /* SwiftOperators */,
+				B7EC29E32A9F46510094D97D /* SwiftParser */,
+				B7EC29E52A9F46510094D97D /* SwiftSyntax */,
 			);
 			productName = ObfuscationTool;
 			productReference = B7587B4B2A8F6CD600C78D4D /* ObfuscationTool.app */;
@@ -122,6 +134,8 @@
 			mainGroup = B7587B422A8F6CD600C78D4D;
 			packageReferences = (
 				0FC7156C2A9CC414000BF135 /* XCRemoteSwiftPackageReference "SwiftString" */,
+				B7F9354E2A9DFE6B001DCD6E /* XCRemoteSwiftPackageReference "SourceKitten" */,
+				B7EC29E02A9F46510094D97D /* XCRemoteSwiftPackageReference "swift-syntax" */,
 			);
 			productRefGroup = B7587B4C2A8F6CD600C78D4D /* Products */;
 			projectDirPath = "";
@@ -302,7 +316,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.wd.live.ObfuscationTool;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -333,7 +347,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.wd.live.ObfuscationTool;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -375,6 +389,22 @@
 				kind = branch;
 			};
 		};
+		B7EC29E02A9F46510094D97D /* XCRemoteSwiftPackageReference "swift-syntax" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-syntax.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		B7F9354E2A9DFE6B001DCD6E /* XCRemoteSwiftPackageReference "SourceKitten" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jpsim/SourceKitten.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -382,6 +412,26 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0FC7156C2A9CC414000BF135 /* XCRemoteSwiftPackageReference "SwiftString" */;
 			productName = SwiftString;
+		};
+		B7EC29E12A9F46510094D97D /* SwiftOperators */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7EC29E02A9F46510094D97D /* XCRemoteSwiftPackageReference "swift-syntax" */;
+			productName = SwiftOperators;
+		};
+		B7EC29E32A9F46510094D97D /* SwiftParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7EC29E02A9F46510094D97D /* XCRemoteSwiftPackageReference "swift-syntax" */;
+			productName = SwiftParser;
+		};
+		B7EC29E52A9F46510094D97D /* SwiftSyntax */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7EC29E02A9F46510094D97D /* XCRemoteSwiftPackageReference "swift-syntax" */;
+			productName = SwiftSyntax;
+		};
+		B7F9354F2A9DFE6B001DCD6E /* SourceKittenFramework */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7F9354E2A9DFE6B001DCD6E /* XCRemoteSwiftPackageReference "SourceKitten" */;
+			productName = SourceKittenFramework;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

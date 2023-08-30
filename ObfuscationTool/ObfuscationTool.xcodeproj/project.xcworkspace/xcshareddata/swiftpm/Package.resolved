@@ -11,12 +11,57 @@
         }
       },
       {
+        "package": "SourceKitten",
+        "repositoryURL": "https://github.com/jpsim/SourceKitten.git",
+        "state": {
+          "branch": "main",
+          "revision": "b1f22c841ef116e68e9fa5f006e20eaeda164308",
+          "version": null
+        }
+      },
+      {
+        "package": "swift-argument-parser",
+        "repositoryURL": "https://github.com/apple/swift-argument-parser.git",
+        "state": {
+          "branch": null,
+          "revision": "8f4d2753f0e4778c76d5f05ad16c74f707390531",
+          "version": "1.2.3"
+        }
+      },
+      {
+        "package": "swift-syntax",
+        "repositoryURL": "https://github.com/apple/swift-syntax.git",
+        "state": {
+          "branch": "main",
+          "revision": "b4749403093de49b11418d7bd80f7ee2b4a926dd",
+          "version": null
+        }
+      },
+      {
         "package": "SwiftString",
         "repositoryURL": "https://github.com/my1325/SwiftString.git",
         "state": {
           "branch": "main",
           "revision": "9ff837cbfd3bb93cdb5b1809289373280e3e1ca8",
           "version": null
+        }
+      },
+      {
+        "package": "SWXMLHash",
+        "repositoryURL": "https://github.com/drmohundro/SWXMLHash.git",
+        "state": {
+          "branch": null,
+          "revision": "a853604c9e9a83ad9954c7e3d2a565273982471f",
+          "version": "7.0.2"
+        }
+      },
+      {
+        "package": "Yams",
+        "repositoryURL": "https://github.com/jpsim/Yams.git",
+        "state": {
+          "branch": null,
+          "revision": "0d9ee7ea8c4ebd4a489ad7a73d5c6cad55d6fed3",
+          "version": "5.0.6"
         }
       }
     ]

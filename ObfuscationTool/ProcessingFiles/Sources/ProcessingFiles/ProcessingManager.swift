@@ -9,7 +9,7 @@ import Foundation
 import FilePath
 
 public protocol ProcessingFilePlugin {
-    func processingManager(_ manager: ProcessingManager, processedFile file: FilePath) -> ProcessingFile
+    func processingManager(_ manager: ProcessingManager, processedFile file: FilePath) throws -> [ProcessingLine]
 }
 
 public final class ProcessingManager {
@@ -59,11 +59,16 @@ public final class ProcessingManager {
     
     public func processingFile(_ filePath: FilePath) -> ProcessedFile? {
         let fileType = FileType(ext: filePath.pathExtension)
-        if let handlePlugin = pluginCache[fileType] {
-            let processingFile = handlePlugin.processingManager(self, processedFile: filePath)
-            return ProcessedFile(processingFile: processingFile)
+        do {
+            if let handlePlugin = pluginCache[fileType] {
+                let lines = try handlePlugin.processingManager(self, processedFile: filePath)
+                return ProcessedFile(lines: lines, path: filePath)
+            }
+            return nil
+        } catch {
+            debugPrint(error)
+            return nil
         }
-        return nil
     }
     
     public func processingDirectory(_ direcotryPath: DirectoryPath) -> [ProcessedFile] {

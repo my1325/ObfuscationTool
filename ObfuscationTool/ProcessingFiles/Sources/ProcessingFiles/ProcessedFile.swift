@@ -6,89 +6,35 @@
 //
 
 import Foundation
+import FilePath
 
-// iClass class-name iEnd
-// iBegin
-// iEmpty
-// iDocument
-// iProperty property-name iEnd
-// iBegin
-// ...Code
-// iStop
-// iEmpty
-// iDocument
-// iFunc func-name iEnd
-// iBegin
-// iStop
-// iStop
 public enum ProcessingIdentifier: String {
-    case iNone
-    
-    case iBody
-    
-    case iFile
+    case iEmpty
     case iClass
-    case iEnum
-    case iStruct
-    
-    case iExtension
-    
-    case iBegin
-    case iStop
-    
     case iProperty
     case iFunc
-
-    case iDocumentInline
-    case iDocumentBlock
+    case iDocument
+    case iHeader
+    case iCode
 }
 
 public protocol ProcessingLine {
-    
+    // should be entire if identifier = (iFunc/iProperty/iDocument/iCode)
     var rawValue: String { get }
     
     var identifier: ProcessingIdentifier { get }
     
-    var output: String { get }
-}
-
-public protocol ProcessingFile {
+    // can not be empty if identifier = (iClass/iFunc/iProperty)
+    var name: String { get }
+    
     var lines: [ProcessingLine] { get }
 }
 
-struct DefaultFileMarkLine: ProcessingLine {
-    let rawValue: String = ""
-    let output: String
-    let identifier: ProcessingIdentifier
-    init(identifier: ProcessingIdentifier = .iFile, output: String = "iFile File iEnd") {
-        self.output = output
-        self.identifier = identifier
-    }
-}
-
-internal final class ProcessedFileObject: DefaultProcessingObject {
-    override class var identifier: ProcessingIdentifier { .iFile }
-    
-    override class var match: CommonProcessingIdentifierPattern { .fileMatch }
-    
-    init() {
-        super.init(startLine: DefaultFileMarkLine())!
-    }
-}
-
 public final class ProcessedFile {
-    let fileObject: ProcessedFileObject = ProcessedFileObject()
-    public let processingFile: ProcessingFile
-    public init(processingFile: ProcessingFile) {
-        self.processingFile = processingFile
-    }
-    
-    public func makeProcessedObjects() -> [ProcessedObject] {
-        var lines = processingFile.lines
-        lines.append(DefaultFileMarkLine(identifier: .iStop, output: ProcessingIdentifier.iStop.rawValue))
-        for line in lines {
-            fileObject.processingLine(line)
-        }
-        return fileObject.objects
+    let path: FilePath
+    public let lines: [ProcessingLine]
+    public init(lines: [ProcessingLine], path: FilePath) {
+        self.lines = lines
+        self.path = path
     }
 }

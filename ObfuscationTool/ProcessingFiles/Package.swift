@@ -11,12 +11,14 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/my1325/FilePath.git", .branchItem("main")),
-        .package(url: "https://github.com/my1325/SwiftString.git", .branchItem("main"))
+        .package(url: "https://github.com/my1325/SwiftString.git", .branchItem("main")),
+        .package(url: "https://github.com/apple/swift-syntax.git", .branchItem("main")),
     ],
     targets: [
         .target(name: "ProcessingFiles", dependencies: [
             "FilePath",
-            "SwiftString"
+            "SwiftString",
+            .product(name: "SwiftSyntax", package: "swift-syntax"),
         ]),
         .target(name: "SwiftFilePlugin", dependencies: [
             "ProcessingFiles",
