@@ -5,9 +5,9 @@ import PackageDescription
 
 let package = Package(
 	name: "ProcessingFiles",
-    platforms: [.macOS(.v10_13)],
+    platforms: [.macOS(.v10_15)],
     products: [
-        .library(name: "ProcessingFiles", targets: ["ProcessingFiles", "SwiftFilePlugin"]),
+        .library(name: "ProcessingFiles", targets: ["ProcessingFiles", "SwiftFilePlugin", "CodeProtocol"]),
     ],
     dependencies: [
         .package(url: "https://github.com/my1325/FilePath.git", .branchItem("main")),
@@ -15,15 +15,19 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-syntax.git", .branchItem("main")),
     ],
     targets: [
+        .target(name: "CodeProtocol"),
         .target(name: "ProcessingFiles", dependencies: [
+            "CodeProtocol",
             "FilePath",
-            "SwiftString",
-            .product(name: "SwiftSyntax", package: "swift-syntax"),
+            "SwiftString"
         ]),
         .target(name: "SwiftFilePlugin", dependencies: [
+            "CodeProtocol",
             "ProcessingFiles",
             "SwiftString",
-            "FilePath"
+            "FilePath",
+            .product(name: "SwiftSyntax", package: "swift-syntax"),
+            .product(name: "SwiftParser", package: "swift-syntax")
         ])
     ]
 )

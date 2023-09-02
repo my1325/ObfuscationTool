@@ -7,31 +7,39 @@
 
 import Foundation
 import FilePath
+import CodeProtocol
 
 public protocol ProcessingFilePlugin {
-    func processingManager(_ manager: ProcessingManager, processedFile file: FilePath) throws -> [ProcessingLine]
+    func processingManager(_ manager: ProcessingManager, processedFile file: FilePath) throws -> ProcessingFile
+}
+
+public protocol ProcessingManagerDelegate: AnyObject {
+    func processingManager(_ manager: ProcessingManager, willProcessingFile at: Path)
+        
+    func processingManager(_ manager: ProcessingManager, didProcessingFile at: Path)
+    
+    func processingManager(_ manager: ProcessingManager, didProcessingWithError error: ProcessingError)
+    
+    func processingManager(_ manager: ProcessingManager, didProcessedFile file: ProcessingFile)
+}
+
+public extension ProcessingManagerDelegate {
+    func processingManager(_ manager: ProcessingManager, willProcessingFile at: Path) {
+        debugPrint("processing manager will processing \(at)")
+    }
+        
+    func processingManager(_ manager: ProcessingManager, didProcessingFile at: Path) {
+        debugPrint("processing manager did processing \(at)")
+    }
+    
+    func processingManager(_ manager: ProcessingManager, didProcessingWithError error: ProcessingError) {
+        debugPrint(error)
+    }
 }
 
 public final class ProcessingManager {
-    public enum FileType {
-        /// .swift
-        case fSwift
-        /// .h
-        case fHeader
-        /// .m
-        case fImplemention
-        /// other
-        case other
-        
-        init(ext: String) {
-            switch ext {
-            case "h": self = .fHeader
-            case "swift": self = .fSwift
-            case "m": self = .fImplemention
-            default: self = .other
-            }
-        }
-    }
+    
+    public weak var delegate: ProcessingManagerDelegate?
     
     public let path: Path
     public init(path: Path) {
@@ -45,7 +53,16 @@ public final class ProcessingManager {
         pluginCache[fileType] = plugin
     }
     
-    public func processing() -> [ProcessedFile] {
+    public func startParse() -> String {
+        let files = processing()
+        let filesString = files.reduce("", {  $0.appending($1.content) })
+        return filesString
+    }
+}
+
+// MARK: - Private
+extension ProcessingManager {
+    private func processing() -> [ProcessingFile] {
         guard path.isExists else { return [] }
         if path.isFile {
             if let processedFile = processingFile(path as! FilePath) {
@@ -57,22 +74,30 @@ public final class ProcessingManager {
         }
     }
     
-    public func processingFile(_ filePath: FilePath) -> ProcessedFile? {
+    private func processingFile(_ filePath: FilePath) -> ProcessingFile? {
+        
+        delegate?.processingManager(self, willProcessingFile: filePath)
+        defer { delegate?.processingManager(self, didProcessingFile: filePath) }
+        
         let fileType = FileType(ext: filePath.pathExtension)
         do {
             if let handlePlugin = pluginCache[fileType] {
-                let lines = try handlePlugin.processingManager(self, processedFile: filePath)
-                return ProcessedFile(lines: lines, path: filePath)
+                return try handlePlugin.processingManager(self, processedFile: filePath)
             }
+            processingErrorOccurred(.notPluginForFileType(fileType))
             return nil
         } catch {
-            debugPrint(error)
+            processingErrorOccurred(.underlying(error))
             return nil
         }
     }
     
-    public func processingDirectory(_ direcotryPath: DirectoryPath) -> [ProcessedFile] {
-        var processedFiles: [ProcessedFile] = []
+    private func processingDirectory(_ direcotryPath: DirectoryPath) -> [ProcessingFile] {
+        
+        delegate?.processingManager(self, willProcessingFile: direcotryPath)
+        defer { delegate?.processingManager(self, didProcessingFile: direcotryPath) }
+        
+        var processedFiles: [ProcessingFile] = []
         for path in direcotryPath.directoryIterator() {
             if path.isFile {
                 if let processedFile = processingFile(path as! FilePath) {
@@ -83,5 +108,9 @@ public final class ProcessingManager {
             }
         }
         return processedFiles
+    }
+    
+    private func processingErrorOccurred(_ error: ProcessingError) {
+        delegate?.processingManager(self, didProcessingWithError: error)
     }
 }
