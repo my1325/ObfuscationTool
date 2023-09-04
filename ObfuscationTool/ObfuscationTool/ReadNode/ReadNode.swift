@@ -713,9 +713,8 @@ class ReadNode {
     }
     //替换
     private class func replaceCustomStr(filePathStr:String) {
-        CacheData.shared.data.removeAll()
         let filePaths = getFilePath(rootDirectorPath: filePathStr)
-        var index:Int = 0
+        var index:Int = CacheData.shared.data.count
         
         func replaceStr(originStr:String, matchStr:String) -> String {
             let regex = try? NSRegularExpression(pattern: matchStr)
@@ -750,35 +749,42 @@ class ReadNode {
     // 删除注释
     private class func deletNote(filePathStr:String) {
         
+        func replaceStr(originStr:String, matchStr:String) -> String {
+            let regex = try? NSRegularExpression(pattern: matchStr/*, options: .dotMatchesLineSeparators*/)
+            var newStr = originStr as NSString
+            var range:NSRange = NSRange(location: 0, length: 1)
+            
+            while range.length > 0 {
+                let match = regex?.firstMatch(in: newStr as String, range: NSRange(location: 0, length: newStr.length))
+                range = match?.range ?? NSRange(location: 0, length: 0)
+                if range.length > 0 {
+                    if newStr.length < range.length || range.length < 0 {
+                        assert(false)
+                    }
+                    newStr = newStr.replacingCharacters(in: range, with: "") as NSString
+                }
+            }
+            return newStr as String
+        }
+        
+        
         let filePaths = getFilePath(rootDirectorPath: filePathStr)
         for filePathStr in filePaths {
-            let filePath = FilePath.file(file: filePathStr)
-            var fileLineItems = (try? filePath.readLines()) ?? []
-            var currentLines:[String] = []
+            let file = FilePath.file(file: filePathStr)
+            if let data = try? file.readData(), let codeStr = String(data: data, encoding: .utf8) {
+                let newStr = replaceStr(originStr: codeStr, matchStr: "(?<!:)\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/")
+                writeStr(filePath: filePathStr, str: newStr)
+            }
+            let newFile = FilePath.file(file: filePathStr)
+            var fileLineItems = (try? newFile.readLines()) ?? []
             fileLineItems.removeAll(where: { str in
                 let newStr = str.ignoreEmpty()
                 if newStr == "\n" || newStr == "" {
                     return true
                 }
-                
-                if newStr.prefix(2) == "//" {
-                    return true
-                }
-                
                 return false
             })
-            
-            while fileLineItems.count > 0 {
-                let currentLine = fileLineItems.first ?? ""
-                let annotateResult = deleteAnnotate(currentLine: currentLine, lines: fileLineItems)
-                if annotateResult.0 {
-                    fileLineItems.removeSubrange(0 ..< annotateResult.1)
-                    continue
-                }
-                currentLines.append(fileLineItems.removeFirst())
-            }
-            
-            let newContentStr = currentLines.joined(separator: "\n")
+            let newContentStr = fileLineItems.joined(separator: "\n")
             writeStr(filePath: filePathStr, str: newContentStr)
         }
     }
@@ -786,19 +792,21 @@ class ReadNode {
     
     
     // 替换类名
-    class func replaceClaseName(filePathStr:String, preStr:String) {
-        changeFileAllow(write: true, filePath: filePathStr)
-        deletNote(filePathStr: filePathStr)
-        
-        replaceCustomStr(filePathStr: filePathStr)
-        
+    public class func replaceClaseName(filePathStrs:[String], preStr:String) {
+//        changeFileAllow(write: true, filePath: filePathStr)
+        for filePathStr in filePathStrs {
+            replaceCustomStr(filePathStr: filePathStr)
+        }
+        for filePathStr in filePathStrs {
+            deletNote(filePathStr: filePathStr)
+        }
         func getReplaceItems(classNode:ClassNode) -> [CLassReplace] {
             let originClassName = classNode.className
             let newClassName = classNode.replaceStr
             var result:[CLassReplace] = []
-            let leftExtrTexts:[String] = ["@"," ","\n","<", "=",".","(","{","?", ".",":", "["]
+            let leftExtrTexts:[String] = ["!","@"," ","\n","<", "=",".","(","{","?", ".",":", "[",","]
             
-            let rightExtrTexts:[String] = [" ","\n",">", "=",".",")","}","?", ".",":", "]","<","(","{"]
+            let rightExtrTexts:[String] = [" ","\n",">", "=",".",")","}","?", ".",":", "]","<","(","{",",", "!"]
             
             for leftExtrText in leftExtrTexts {
                 for rightExtrText in rightExtrTexts {
@@ -823,28 +831,44 @@ class ReadNode {
         func replaceStringItem(str:String,replace:CLassReplace) -> String {
             return str.replacingOccurrences(of: replace.originStr, with: replace.replaceStr)
         }
-        
-        let fileNodes = getNodes(filePath: filePathStr)
-        
+        var fileNodes:[FileNode] = []
+        for filePathStr in filePathStrs {
+            fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
+        }
+        var replaceClasss:[CLassReplace] = []
         for fileNode in fileNodes {
-            var replaceClasss:[CLassReplace] = []
             for replaceClass in fileNode.classNodes {
                 replaceClasss.append(contentsOf: getReplaceItems(classNode: replaceClass))
             }
-            
+        }
+        
+        for fileNode in fileNodes {
             for replaceClass in replaceClasss {
                 fileNode.code = replaceStringItem(str: fileNode.code, replace: replaceClass)
             }
         }
+        
+        
         self.writeCode(fileNodes: fileNodes)
-        reductionCustomStr(filePathStr: filePathStr)
+        for filePathStr in filePathStrs {
+            reductionCustomStr(filePathStr: filePathStr)
+        }
+        CacheData.shared.data.removeAll()
     }
     //更改位置
-    class func exchageLineFileNodes(filePathStr:String) {
-        changeFileAllow(write: true, filePath: filePathStr)
-        deletNote(filePathStr: filePathStr)
-        replaceCustomStr(filePathStr: filePathStr)
-        let fileNodes = getNodes(filePath: filePathStr)
+    public class func exchageLineFileNodes(filePathStrs:[String]) {
+        for filePathStr in filePathStrs {
+            replaceCustomStr(filePathStr: filePathStr)
+        }
+        for filePathStr in filePathStrs {
+            deletNote(filePathStr: filePathStr)
+        }
+        
+        var fileNodes:[FileNode] = []
+        for filePathStr in filePathStrs {
+            fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
+        }
+        
         for fileNode in fileNodes {
             let newCode:String = fileNode.getString()
             let filePath = FilePath.file(file: fileNode.filePath)
@@ -852,7 +876,10 @@ class ReadNode {
                 try? filePath.writeData(data)
             }
         }
-        reductionCustomStr(filePathStr: filePathStr)
+        for filePathStr in filePathStrs {
+            reductionCustomStr(filePathStr: filePathStr)
+        }
+        CacheData.shared.data.removeAll()
     }
     
     class func changeFileAllow(write:Bool, filePath:String) {

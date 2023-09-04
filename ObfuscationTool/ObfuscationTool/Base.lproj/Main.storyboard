@@ -725,7 +725,7 @@
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
-                                    <action selector="clickReplaceClass:" target="XfG-lQ-9wD" id="HQ4-mh-Sac"/>
+                                    <action selector="clickReplaceClass:" target="XfG-lQ-9wD" id="Wei-aR-IRH"/>
                                 </connections>
                             </button>
                             <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RSz-QU-aRj">
