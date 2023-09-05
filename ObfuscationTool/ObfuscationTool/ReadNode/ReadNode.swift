@@ -126,7 +126,7 @@ class ReadNode {
         let cacheLines = lines
         let itemChars:[CharsData] = [CharsData(startStr: "{", endStr: "}", charCount: 0), CharsData(startStr: "(", endStr: ")", charCount: 0), CharsData(startStr: "#if", endStr: "#endif", charCount: 0)]
         var startBegain:Bool = false
-        var startVerify:Bool = false
+//        var startVerify:Bool = false
         var totalCount = 0
         var codeStr:String = ""
         for i in 0 ..< cacheLines.count {
@@ -135,15 +135,15 @@ class ReadNode {
                 startBegain = true
             }
             if startBegain {
-                if !startVerify {
-                    let itemStr = item as NSString
-                    for itemChar in itemChars {
-                        if itemStr.contains(itemChar.startStr) {
-                            startVerify = true
-                            break
-                        }
-                    }
-                }
+//                if !startVerify {
+//                    let itemStr = item as NSString
+//                    for itemChar in itemChars {
+//                        if itemStr.contains(itemChar.startStr) {
+//                            startVerify = true
+//                            break
+//                        }
+//                    }
+//                }
                 for itemChar in itemChars {
                     itemChar.charCount += item.countChar(startStr: itemChar.startStr, endStr: itemChar.endStr)
                     
@@ -151,7 +151,7 @@ class ReadNode {
                 codeStr.append(item)
                 codeStr.append("\n")
                 totalCount += 1
-                if startVerify {
+//                if startVerify {
                     if itemChars.map({$0.charCount}).reduce(0, {$0+$1}) == 0 {
                         var continueBool = false
                         let newItemStr = item.ignoreEmpty()
@@ -180,7 +180,7 @@ class ReadNode {
 //                        codeStr.removeLast()
                         break
                     }
-                }
+//                }
             }
         }
         return (codeStr, totalCount)
@@ -811,7 +811,7 @@ class ReadNode {
             for leftExtrText in leftExtrTexts {
                 for rightExtrText in rightExtrTexts {
                     if preStr.count > 0 {
-                        result.append(CLassReplace(originStr: "\(leftExtrText)\(originClassName)\(rightExtrText)", replaceStr: "\(leftExtrText)\(preStr)_\(newClassName)\(rightExtrText)"))
+                        result.append(CLassReplace(originStr: "\(leftExtrText)\(originClassName)\(rightExtrText)", replaceStr: "\(leftExtrText)\(preStr)_\(originClassName)\(rightExtrText)"))
                     } else {
                         result.append(CLassReplace(originStr: "\(leftExtrText)\(originClassName)\(rightExtrText)", replaceStr: "\(leftExtrText)\(newClassName)\(rightExtrText)"))
                     }

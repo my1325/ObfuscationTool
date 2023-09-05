@@ -15,7 +15,11 @@ class ViewController: NSViewController {
     @IBOutlet weak var preStrTextFiled: NSTextField!
     override func viewDidLoad() {
         super.viewDidLoad()
-        (self.filePathTextFiled.documentView as? NSTextView)?.string = "/Users/zzy/Desktop/company/MOX/Pods/RxSwift\n/Users/zzy/Desktop/company/MOX/Pods/RxCocoa\n/Users/zzy/Desktop/company/MOX/Pods/RxRelay\n/Users/zzy/Desktop/company/MOX/Pods/RxStoreKit"
+        (self.filePathTextFiled.documentView as? NSTextView)?.string = ""
+        let files = NSSearchPathForDirectoriesInDomains(.downloadsDirectory, .userDomainMask, true)[0].appending("/MOXiiWhitePointerService.swift")
+        let nodes = ReadNode.getNodes(filePath: files)
+        
+        debugPrint("")
     }
     @IBAction func clickReplaceClass(_ sender: Any) {
         let preStr = preStrTextFiled.stringValue.uppercased().ignoreEmpty().replacingOccurrences(of: "\n", with: "")
@@ -37,6 +41,7 @@ class ViewController: NSViewController {
 //        indictor.animator()
         ReadNode.replaceClaseName(filePathStrs: filePaths, preStr: preStr)
     }
+    
     @IBAction func clickExchang(_ sender: NSButton) {
         guard let textView = filePathTextFiled.documentView as? NSTextView else {
             return
