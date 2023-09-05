@@ -496,7 +496,7 @@ class ReadNode {
                         found = true
                         let (subPropertyStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, isPrperty: true)
                         functionLineItems.removeSubrange(0 ..< lineCount)
-                        subLines.append(FunctionBlockNode(code: subPropertyStr))
+                        subLines.append(FunctionBlockNode(extStrs:extrTexts, code: subPropertyStr))
                         extrTexts.removeAll()
                     }
 
@@ -549,7 +549,7 @@ class ReadNode {
                     } else {
                         let (subPropertyStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, isPrperty: true)
                         functionLineItems.removeSubrange(0 ..< lineCount)
-                        subLines.append(FunctionBlockNode(code: subPropertyStr))
+                        subLines.append(FunctionBlockNode(extStrs:extrTexts, code: subPropertyStr))
                         extrTexts.removeAll()
                     }
                 }

@@ -38,10 +38,22 @@ extension Array:BaseNodeProtocol where Element:BaseNodeProtocol {
 
 class FunctionBlockNode: BaseNode {
     override func getString() -> String {
-        return code
+        var str:String = ""
+        str.append(extStrs.joined())
+        if str.ignoreEmpty().count > 0 {
+            str.append("\n")
+        }
+        str.append(code)
+        if str.ignoreEmpty().count > 0 {
+            str.append("\n")
+        }
+        return str
     }
+    //前项
+    var extStrs:[String]
     var code:String
-    init(code: String) {
+    init(extStrs:[String], code: String) {
+        self.extStrs = extStrs
         self.code = code
     }
 }
