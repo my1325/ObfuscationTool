@@ -136,7 +136,7 @@ class ReadNode {
         case .fileType:
             needBlockContent = false
         }
-        let afterNeedsContinueStrs:[String] = ["=","(","{","->","where", ":", ",", "+"]
+        let afterNeedsContinueStrs:[String] = ["=","(","{","->","where", ":", ",", "+", "."]
         let nextNeedsContinueStrs:[String] = ["=","->","where","+"]
         let cacheLines = lines
         let itemChars:[CharsData] = [CharsData(startStr: "{", endStr: "}", charCount: 0), CharsData(startStr: "(", endStr: ")", charCount: 0), CharsData(startStr: "#if", endStr: "#endif", charCount: 0),CharsData(startStr: "[", endStr: "]", charCount: 0)]
