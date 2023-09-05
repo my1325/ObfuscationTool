@@ -23,12 +23,27 @@ open class SwiftFileProcessingPlugin: ProcessingFilePlugin {
 
         var parser = Parser(source)
         let fileSyntax = SourceFileSyntax.parse(from: &parser)
-        walk(fileSyntax)
     }
 }
 
-open class SwiftFileProcessingWalker: SyntaxVisitor {
-    public init(viewMode: SyntaxTreeViewMode = .sourceAccurate, fileSyntax: SourceFileSyntax) {
+public final class SwiftFileProcessingWalker: SyntaxAnyVisitor {
+    
+    public override func visitAny(_ node: Syntax) -> SyntaxVisitorContinueKind {
+        if node is DeclSyntaxProtocol {
+            
+        }
+        return .skipChildren
+    }
+    
+    func visitCodeContainer<S: CustomCodeContainerSyntaxProtocol & DeclSyntaxProtocol & CustomNamedDeclSyntax>(_ node: S) {
+        CodeContainerSyntax(syntaxNode: node)
+    }
+    
+    func visitCode<S: CustomCodeSyntaxProtocol & SyntaxProtocol & CustomNamedDeclSyntax>(_ node: S) {
+        CodeSyntax(syntaxNode: node)
+    }
+    
+    public init(viewMode: SyntaxTreeViewMode = .sourceAccurate, syntax: SyntaxProtocol) {
         
     }
 }

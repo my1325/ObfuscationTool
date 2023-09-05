@@ -54,11 +54,12 @@ public enum CodeContainerType {
     case `enum`
     case `extension`
     case `protocol`
+    case block
     
     public var order: CodeOrder {
         switch self {
         case .protocol: return .topMost
-        case .enum, .struct: return .top
+        case .enum, .struct, .block: return .top
         case .class: return .middle
         case .extension: return .bottomMost
         }
