@@ -8,15 +8,31 @@
 import Foundation
 import ProcessingFiles
 
+enum NodeType {
+    case propertyType
+    case classType
+    case protocolType
+    case blockType
+    case funcType
+    case fileType
+}
 protocol BaseNodeProtocol {
-    func getString() -> String
+     func getString() -> String
+    var nodeType:NodeType {get}
+}
+extension BaseNodeProtocol {
+     func getString() -> String {
+        return ""
+    }
+    var nodeType: NodeType {
+        return .blockType
+    }
 }
 
 class BaseNode:BaseNodeProtocol {
-    func getString() -> String {
+     func getString() -> String {
         return ""
     }
-    
     lazy var replaceStr:String = {
         getRandomStr()
     }()
@@ -56,6 +72,9 @@ class FunctionBlockNode: BaseNode {
         self.extStrs = extStrs
         self.code = code
     }
+    var nodeType: NodeType {
+        return .blockType
+    }
 }
 
 
@@ -74,15 +93,20 @@ func getRandomStr() -> String {
 
 //属性
 class ArgumentNode:BaseNode {
-    override func getString() -> String {
+     override func getString() -> String {
         var str:String = ""
         str.append(extStrs.joined())
-        str.append("\n")
+         if str.ignoreEmpty().count > 0 {
+             str.append("\n")
+         }
         str.append(code)
         if str.ignoreEmpty().count > 0 {
             str.append("\n")
         }
         return str
+    }
+    var nodeType: NodeType {
+        return .propertyType
     }
     
     //前项
@@ -98,10 +122,12 @@ class ArgumentNode:BaseNode {
 
 //方法 内部方法可以打乱,其他顺序不能乱
 class FunctionNode:BaseNode {
-    override func getString() -> String {
+     override func getString() -> String {
         var str:String = ""
         str.append(extStrs.joined())
-        str.append("\n")
+         if str.ignoreEmpty().count > 0 {
+             str.append("\n")
+         }
         str.append(functionFirstLine)
         str.append("\n")
         str.append(blockCode.map({$0.getString()}).joined())
@@ -113,7 +139,9 @@ class FunctionNode:BaseNode {
         str.append("\n")
         return str
     }
-    
+    var nodeType: NodeType {
+        return .funcType
+    }
     //前项
     var extStrs:[String]
     
@@ -157,11 +185,16 @@ class FunctionNode:BaseNode {
 
 // 类
 class ClassNode:BaseNode {
+    var nodeType: NodeType {
+        return .classType
+    }
     // struct不能换位置
-    override func getString() -> String {
+     override func getString() -> String {
         var str:String = ""
         str.append(extStrs.joined())
-        str.append("\n")
+         if str.ignoreEmpty().count > 0 {
+             str.append("\n")
+         }
         str.append(classFirstLine)
         str.append("\n")
         var allNode:[BaseNode] = []
@@ -214,10 +247,15 @@ class ClassNode:BaseNode {
 }
 
 class ExtensionNode:BaseNode {
-    override func getString() -> String {
+    var nodeType: NodeType {
+        return .protocolType
+    }
+     override func getString() -> String {
         var str:String = ""
         str.append(extStrs.joined())
-        str.append("\n")
+         if str.ignoreEmpty().count > 0 {
+             str.append("\n")
+         }
         str.append(classFirstLine)
         str.append("\n")
         var allNode:[BaseNode] = []
@@ -255,7 +293,10 @@ class ExtensionNode:BaseNode {
 
 // 文件
 class FileNode:BaseNode {
-    override func getString() -> String {
+    var nodeType: NodeType {
+        return .fileType
+    }
+     override func getString() -> String {
         var str:String = ""
         var allNode:[BaseNode] = []
         allNode.append(contentsOf: subBlock)

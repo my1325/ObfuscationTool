@@ -120,13 +120,29 @@ class CacheData {
 }
 
 class ReadNode {
-    private class func getBlockCode(lineStr:String, lines:[String], isPrperty:Bool = false) -> (String,Int) {
-        let afterNeedsContinueStrs:[String] = ["=","(","{","->","where"]
-        let nextNeedsContinueStrs:[String] = ["=","->","where"]
+    private class func getBlockCode(lineStr:String, lines:[String], superType:NodeType) -> (String,Int) {
+        var needBlockContent:Bool
+        switch superType {
+        case .protocolType:
+            needBlockContent = false
+        case .propertyType:
+            needBlockContent = false
+        case .classType:
+            needBlockContent = true
+        case .blockType:
+            needBlockContent = false
+        case .funcType:
+            needBlockContent = true
+        case .fileType:
+            needBlockContent = false
+        }
+        let afterNeedsContinueStrs:[String] = ["=","(","{","->","where", ":", ",", "+"]
+        let nextNeedsContinueStrs:[String] = ["=","->","where","+"]
         let cacheLines = lines
         let itemChars:[CharsData] = [CharsData(startStr: "{", endStr: "}", charCount: 0), CharsData(startStr: "(", endStr: ")", charCount: 0), CharsData(startStr: "#if", endStr: "#endif", charCount: 0),CharsData(startStr: "[", endStr: "]", charCount: 0)]
+        let blockChar:CharsData = CharsData(startStr: "{", endStr: "}", charCount: 0)
         var startBegain:Bool = false
-//        var startVerify:Bool = false
+        var startVerify:Bool = false
         var totalCount = 0
         var codeStr:String = ""
         for i in 0 ..< cacheLines.count {
@@ -135,23 +151,25 @@ class ReadNode {
                 startBegain = true
             }
             if startBegain {
-//                if !startVerify {
-//                    let itemStr = item as NSString
-//                    for itemChar in itemChars {
-//                        if itemStr.contains(itemChar.startStr) {
-//                            startVerify = true
-//                            break
-//                        }
-//                    }
-//                }
                 for itemChar in itemChars {
                     itemChar.charCount += item.countChar(startStr: itemChar.startStr, endStr: itemChar.endStr)
-                    
                 }
                 codeStr.append(item)
                 codeStr.append("\n")
                 totalCount += 1
-//                if startVerify {
+                
+                if needBlockContent {
+                    if !startVerify {
+                        let itemStr = item as NSString
+                        if itemStr.contains(blockChar.startStr) {
+                            startVerify = true
+                        }
+                    }
+                } else {
+                    startVerify = true
+                }
+
+                if startVerify {
                     if itemChars.map({$0.charCount}).reduce(0, {$0+$1}) == 0 {
                         var continueBool = false
                         let newItemStr = item.ignoreEmpty()
@@ -180,7 +198,7 @@ class ReadNode {
 //                        codeStr.removeLast()
                         break
                     }
-//                }
+                }
             }
         }
         return (codeStr, totalCount)
@@ -304,8 +322,14 @@ class ReadNode {
         }
         
         className = newLine.substring(with: NSRange(location: start, length: length)).ignoreEmpty().replacingOccurrences(of: "\n", with: "")
+        var nodeType:NodeType = .classType
+        switch classarm {
+        case "protocol ":
+            nodeType = .propertyType
+        default: break
+        }
         
-        let partCode = getPartCode(allLines: classLineItems, contentStr: classContent)
+        let partCode = getPartCode(allLines: classLineItems, contentStr: classContent, nodeType:nodeType)
         let subFunctionNodes:[FunctionNode] = partCode.1
         let subClassNodes:[ClassNode] = partCode.0
         let subPorpertyNodes:[ArgumentNode] = partCode.2
@@ -338,7 +362,7 @@ class ReadNode {
             }
         }
         
-        let partCode = getPartCode(allLines: classLineItems, contentStr: classContent)
+        let partCode = getPartCode(allLines: classLineItems, contentStr: classContent, nodeType:.classType)
         let subFunctionNodes:[FunctionNode] = partCode.1
         let subClassNodes:[ClassNode] = partCode.0
         
@@ -439,7 +463,7 @@ class ReadNode {
     //                    argumentItems.append(argumentItem)
     //                }
     //            }
-            let partCode = getPartCode(allLines: functionLineItems, contentStr: functionStr)
+            let partCode = getPartCode(allLines: functionLineItems, contentStr: functionStr, nodeType:.funcType)
             let subFunctionNodes:[FunctionNode] = partCode.1
             let subClassNodes:[ClassNode] = partCode.0
             let subPorpertyNodes:[FunctionBlockNode] = partCode.3
@@ -457,7 +481,7 @@ class ReadNode {
         }
     }
     
-    private class func getPartCode(allLines:[String], contentStr:String) -> ([ClassNode],[FunctionNode],[ArgumentNode],[FunctionBlockNode], [ExtensionNode]) {
+    private class func getPartCode(allLines:[String], contentStr:String, nodeType:NodeType) -> ([ClassNode],[FunctionNode],[ArgumentNode],[FunctionBlockNode], [ExtensionNode]) {
         var functionLineItems = allLines
         
         var subFunctionNodes:[FunctionNode] = []
@@ -485,7 +509,7 @@ class ReadNode {
             }
             
             if found {
-                let (subfuncStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems)
+                let (subfuncStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType)
                 functionLineItems.removeFirst(lineCount)
                 let functionNode = getFunction(extStrs:extrTexts, functionStr: subfuncStr)
                 subFunctionNodes.append(functionNode)
@@ -494,7 +518,7 @@ class ReadNode {
                 for classStr in propertyNames {
                     if currentLine.contains(classStr) {
                         found = true
-                        let (subPropertyStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, isPrperty: true)
+                        let (subPropertyStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType)
                         functionLineItems.removeSubrange(0 ..< lineCount)
                         subLines.append(FunctionBlockNode(extStrs:extrTexts, code: subPropertyStr))
                         extrTexts.removeAll()
@@ -506,7 +530,7 @@ class ReadNode {
                     for classStr in classNames {
                         if currentLine.contains(classStr) {
                             found = true
-                            let (subClassStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems)
+                            let (subClassStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType)
                             functionLineItems.removeSubrange(0 ..< lineCount)
                             let subClassNode = getClassNodeStr(extStrs:extrTexts, classarm:classStr,classContent: subClassStr)
                             subClassNodes.append(subClassNode)
@@ -519,7 +543,7 @@ class ReadNode {
                 if !found {
                     if currentLine.ignoreEmpty().hasPrefix("extension") {
                         found = true
-                        let (subClassStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems)
+                        let (subClassStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType)
                         functionLineItems.removeSubrange(0 ..< lineCount)
                         let subExtension = getExtensionNodeStr(extStrs: extrTexts, classContent: subClassStr)
                         extensions.append(subExtension)
@@ -547,7 +571,7 @@ class ReadNode {
                         extrTexts.append(currentLine)
                         functionLineItems.removeFirst()
                     } else {
-                        let (subPropertyStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, isPrperty: true)
+                        let (subPropertyStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType)
                         functionLineItems.removeSubrange(0 ..< lineCount)
                         subLines.append(FunctionBlockNode(extStrs:extrTexts, code: subPropertyStr))
                         extrTexts.removeAll()
@@ -618,7 +642,7 @@ class ReadNode {
 //        let newContentStr = currentLines.joined(separator: "\n")
         if let data = try? FilePath.file(file: filePathStr).readData(), let codeStr = String(data: data, encoding: .utf8) {
             let currentLines = codeStr.components(separatedBy: "\n")
-            let partCode = getPartCode(allLines: currentLines, contentStr: codeStr)
+            let partCode = getPartCode(allLines: currentLines, contentStr: codeStr, nodeType: .fileType)
             let subFunctionNodes:[FunctionNode] = partCode.1
             let subClassNodes:[ClassNode] = partCode.0
             let subPorpertyNodes:[ArgumentNode] = partCode.2
