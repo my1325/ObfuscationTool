@@ -10,37 +10,11 @@ import FilePath
 import CodeProtocol
 
 public protocol ProcessingFilePlugin {
-    func processingManager(_ manager: ProcessingManager, processedFile file: FilePath) throws -> ProcessingFile
-}
-
-public protocol ProcessingManagerDelegate: AnyObject {
-    func processingManager(_ manager: ProcessingManager, willProcessingFile at: Path)
-        
-    func processingManager(_ manager: ProcessingManager, didProcessingFile at: Path)
-    
-    func processingManager(_ manager: ProcessingManager, didProcessingWithError error: ProcessingError)
-    
-    func processingManager(_ manager: ProcessingManager, didProcessedFile file: ProcessingFile)
-}
-
-public extension ProcessingManagerDelegate {
-    func processingManager(_ manager: ProcessingManager, willProcessingFile at: Path) {
-        debugPrint("processing manager will processing \(at)")
-    }
-        
-    func processingManager(_ manager: ProcessingManager, didProcessingFile at: Path) {
-        debugPrint("processing manager did processing \(at)")
-    }
-    
-    func processingManager(_ manager: ProcessingManager, didProcessingWithError error: ProcessingError) {
-        debugPrint(error)
-    }
+    func processingManager(_ manager: ProcessingManager, processedFile file: FilePath) throws -> [CodeRawProtocol]
 }
 
 public final class ProcessingManager {
-    
-    public weak var delegate: ProcessingManagerDelegate?
-    
+        
     public let path: Path
     public init(path: Path) {
         self.path = path
@@ -53,16 +27,13 @@ public final class ProcessingManager {
         pluginCache[fileType] = plugin
     }
     
-    public func startParse() -> String {
-        let files = processing()
-        let filesString = files.reduce("", {  $0.appending($1.content) })
-        return filesString
+    public func processingString() throws -> String {
+        try processing()
+            .map({ try $0.getContent() })
+            .joined()
     }
-}
-
-// MARK: - Private
-extension ProcessingManager {
-    private func processing() -> [ProcessingFile] {
+    
+    public func processing() -> [ProcessingFile] {
         guard path.isExists else { return [] }
         if path.isFile {
             if let processedFile = processingFile(path as! FilePath) {
@@ -73,29 +44,28 @@ extension ProcessingManager {
             return processingDirectory(path as! DirectoryPath)
         }
     }
+}
+
+// MARK: - Private
+extension ProcessingManager {
     
     private func processingFile(_ filePath: FilePath) -> ProcessingFile? {
-        
-        delegate?.processingManager(self, willProcessingFile: filePath)
-        defer { delegate?.processingManager(self, didProcessingFile: filePath) }
         
         let fileType = FileType(ext: filePath.pathExtension)
         do {
             if let handlePlugin = pluginCache[fileType] {
-                return try handlePlugin.processingManager(self, processedFile: filePath)
+                let codes = try handlePlugin.processingManager(self, processedFile: filePath)
+                let file = ProcessingFile(filePath: filePath, fileType: fileType)
+                file.setCodes(codes)
+                return file
             }
-            processingErrorOccurred(.notPluginForFileType(fileType))
             return nil
         } catch {
-            processingErrorOccurred(.underlying(error))
             return nil
         }
     }
     
     private func processingDirectory(_ direcotryPath: DirectoryPath) -> [ProcessingFile] {
-        
-        delegate?.processingManager(self, willProcessingFile: direcotryPath)
-        defer { delegate?.processingManager(self, didProcessingFile: direcotryPath) }
         
         var processedFiles: [ProcessingFile] = []
         for path in direcotryPath.directoryIterator() {
@@ -108,9 +78,5 @@ extension ProcessingManager {
             }
         }
         return processedFiles
-    }
-    
-    private func processingErrorOccurred(_ error: ProcessingError) {
-        delegate?.processingManager(self, didProcessingWithError: error)
     }
 }

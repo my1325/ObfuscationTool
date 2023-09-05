@@ -6,7 +6,7 @@
 //
 
 import Cocoa
-import ProcessingFiles
+//import ProcessingFiles
 import SwiftFilePlugin
 import FilePath
 
@@ -14,7 +14,27 @@ import SwiftString
 import SwiftSyntax
 import SwiftParser
 
-class ViewController: NSViewController, ProcessingManagerDelegate {
+public extension Array {
+    func grouped(_ by: @escaping (Element, Element) -> Bool) -> [[Element]] {
+        var retValue: [[Element]] = Array<[Element]>(repeating: [], count: count)
+        var length = 0
+        for e in self {
+            var i = 0
+            while i < length {
+                var subValue = retValue[i]
+                if by(e, subValue[0]) { break }
+                i += 1
+            }
+            var subValue = retValue[i]
+            subValue.append(e)
+            retValue[i] = subValue
+            if i == length { length += 1 }
+        }
+        return retValue.prefix(upTo: length).map({ $0 })
+    }
+}
+
+class ViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 //        testSwiftSyntax()
@@ -22,18 +42,21 @@ class ViewController: NSViewController, ProcessingManagerDelegate {
     }
     
     func testProcessingFile() {
-        let filePath = Directory.desktop.appendFileName("SwiftFileIdentifierCache", ext: ".swift")
-        let swiftFilePlugin = SwiftFileProcessingPlugin()
-        let processingManager = ProcessingManager(path: filePath)
-        processingManager.registerPlugin(swiftFilePlugin, forFileType: .fSwift)
-        processingManager.delegate = self
-        let fileString = processingManager.startParse()
-        print(fileString)
+//        let filePath = Directory.desktop.appendFileName("SwiftFileIdentifierCache", ext: ".swift")
+//        let swiftFilePlugin = SwiftFileProcessingPlugin()
+//        let processingManager = ProcessingManager(path: filePath)
+//        processingManager.registerPlugin(swiftFilePlugin, forFileType: .fSwift)
+//        processingManager.delegate = self
+//        let fileString = processingManager.startParse()
+//        print(fileString)
+        let test = [1,2,3,4,5,1,2,3,5,6,3,2,4,5,2,1,1,2,1,2,3,4,5,6,7]
+        let grouped = test.grouped({ $0 == $1 })
+        print(grouped)
     }
     
-    func processingManager(_ manager: ProcessingFiles.ProcessingManager, didProcessedFile file: ProcessingFiles.ProcessingFile) {
-        
-    }
+//    func processingManager(_ manager: ProcessingFiles.ProcessingManager, didProcessedFile file: ProcessingFiles.ProcessingFile) {
+//
+//    }
     
     class CustomVisitor: SyntaxAnyVisitor {
         var classTokens: [TokenSequence] = []
