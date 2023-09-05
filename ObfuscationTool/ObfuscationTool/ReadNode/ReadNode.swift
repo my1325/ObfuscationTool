@@ -124,7 +124,7 @@ class ReadNode {
         let afterNeedsContinueStrs:[String] = ["=","(","{","->","where"]
         let nextNeedsContinueStrs:[String] = ["=","->","where"]
         let cacheLines = lines
-        let itemChars:[CharsData] = [CharsData(startStr: "{", endStr: "}", charCount: 0), CharsData(startStr: "(", endStr: ")", charCount: 0), CharsData(startStr: "#if", endStr: "#endif", charCount: 0)]
+        let itemChars:[CharsData] = [CharsData(startStr: "{", endStr: "}", charCount: 0), CharsData(startStr: "(", endStr: ")", charCount: 0), CharsData(startStr: "#if", endStr: "#endif", charCount: 0),CharsData(startStr: "[", endStr: "]", charCount: 0)]
         var startBegain:Bool = false
 //        var startVerify:Bool = false
         var totalCount = 0
