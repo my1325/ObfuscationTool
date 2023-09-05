@@ -740,9 +740,11 @@ class ReadNode {
         for file in filePaths {
             
             if let data = try? FilePath.file(file: file).readData(), let codeStr = String(data: data, encoding: .utf8) {
-                var newStr = replaceStr(originStr: codeStr, matchStr: "\"\"\"[^(\"\"\")]*\"\"\"")
-                newStr = replaceStr(originStr: newStr, matchStr: "\"([^\"]*)\"")
+                
+                var newStr = replaceStr(originStr: codeStr, matchStr: "\"\"\"(\\s|.)*?\"\"\"")
+                newStr = replaceStr(originStr: newStr, matchStr: "\"(\\s|.)*?\"")
                 writeStr(filePath: file, str: newStr)
+                
             }
         }
     }
@@ -750,21 +752,27 @@ class ReadNode {
     private class func deletNote(filePathStr:String) {
         
         func replaceStr(originStr:String, matchStr:String) -> String {
-            let regex = try? NSRegularExpression(pattern: matchStr/*, options: .dotMatchesLineSeparators*/)
-            var newStr = originStr as NSString
-            var range:NSRange = NSRange(location: 0, length: 1)
-            
-            while range.length > 0 {
-                let match = regex?.firstMatch(in: newStr as String, range: NSRange(location: 0, length: newStr.length))
-                range = match?.range ?? NSRange(location: 0, length: 0)
-                if range.length > 0 {
-                    if newStr.length < range.length || range.length < 0 {
-                        assert(false)
+            do {
+                let regex = try NSRegularExpression(pattern: matchStr/*, options: .dotMatchesLineSeparators*/)
+                var newStr = originStr as NSString
+                var range:NSRange = NSRange(location: 0, length: 1)
+                
+                while range.length > 0 {
+                    let match = regex.firstMatch(in: newStr as String, range: NSRange(location: 0, length: newStr.length))
+                    range = match?.range ?? NSRange(location: 0, length: 0)
+                    if range.length > 0 {
+                        if newStr.length < range.length || range.length < 0 {
+                            assert(false)
+                        }
+                        newStr = newStr.replacingCharacters(in: range, with: "") as NSString
                     }
-                    newStr = newStr.replacingCharacters(in: range, with: "") as NSString
                 }
+                return newStr as String
+            } catch {
+                print("\(error)")
+                assert(false)
             }
-            return newStr as String
+            return ""
         }
         
         
