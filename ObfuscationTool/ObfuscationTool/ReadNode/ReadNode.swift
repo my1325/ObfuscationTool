@@ -48,11 +48,12 @@ extension String {
     }
     func countChar(startStr:String, endStr:String) -> Int {
         var resultCount = 0
+        let ignorStr = self.ignoreEmpty().replacingOccurrences(of: "\n", with: "")
         if startStr == "#if" {
-            if self.ignoreEmpty().hasPrefix(startStr) {
+            if ignorStr.hasPrefix(startStr) {
                 resultCount += 1
             }
-            if self.hasSuffix(endStr) {
+            if ignorStr.hasSuffix(endStr) {
                 resultCount -= 1
             }
         } else {
@@ -120,22 +121,27 @@ class CacheData {
 }
 
 class ReadNode {
-    private class func getBlockCode(lineStr:String, lines:[String], superType:NodeType) -> (String,Int) {
+    private class func getBlockCode(lineStr:String, lines:[String], superType:NodeType, currentType:NodeType) -> (String,Int) {
         var needBlockContent:Bool
-        switch superType {
-        case .protocolType:
+        if superType == .propertyType {
             needBlockContent = false
-        case .propertyType:
-            needBlockContent = false
-        case .classType:
-            needBlockContent = true
-        case .blockType:
-            needBlockContent = false
-        case .funcType:
-            needBlockContent = true
-        case .fileType:
-            needBlockContent = false
+        } else {
+            switch currentType {
+            case .protocolType:
+                needBlockContent = false
+            case .propertyType:
+                needBlockContent = false
+            case .classType:
+                needBlockContent = true
+            case .blockType:
+                needBlockContent = false
+            case .funcType:
+                needBlockContent = true
+            case .fileType:
+                needBlockContent = false
+            }
         }
+
         let afterNeedsContinueStrs:[String] = ["=","(","{","->","where", ":", ",", "+", "."]
         let nextNeedsContinueStrs:[String] = ["=","->","where","+"]
         let cacheLines = lines
@@ -277,6 +283,7 @@ class ReadNode {
         while cacheLines.count > 0 {
             let firstLine = cacheLines.removeFirst()
             codeStr.append(firstLine)
+            codeStr.append("\n")
             count += 1
             if firstLine.ignoreEmpty().last == "{" {
                 break
@@ -350,7 +357,10 @@ class ReadNode {
     private class func getExtensionNodeStr(extStrs:[String], classContent: String) -> ExtensionNode {
         let dealWithResult = classContent.fileterEndCode()
         var classLineItems:[String] = dealWithResult.components(separatedBy: "\n")
-        var firstLineStr = classLineItems.removeFirst()
+        let firsLine = getClassName(lines: classLineItems)
+        var firstLineStr = firsLine.0
+        classLineItems.removeSubrange(0 ..< firsLine.1)
+//        var firstLineStr = classLineItems.removeFirst()
         
         if let nextLine = classLineItems.first {
             if nextLine.ignoreEmpty().hasPrefix("{") == true {
@@ -509,7 +519,7 @@ class ReadNode {
             }
             
             if found {
-                let (subfuncStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType)
+                let (subfuncStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType, currentType: .funcType)
                 functionLineItems.removeFirst(lineCount)
                 let functionNode = getFunction(extStrs:extrTexts, functionStr: subfuncStr)
                 subFunctionNodes.append(functionNode)
@@ -518,7 +528,7 @@ class ReadNode {
                 for classStr in propertyNames {
                     if currentLine.contains(classStr) {
                         found = true
-                        let (subPropertyStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType)
+                        let (subPropertyStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType, currentType: .propertyType)
                         functionLineItems.removeSubrange(0 ..< lineCount)
                         subLines.append(FunctionBlockNode(extStrs:extrTexts, code: subPropertyStr))
                         extrTexts.removeAll()
@@ -530,7 +540,7 @@ class ReadNode {
                     for classStr in classNames {
                         if currentLine.contains(classStr) {
                             found = true
-                            let (subClassStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType)
+                            let (subClassStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType, currentType: .classType)
                             functionLineItems.removeSubrange(0 ..< lineCount)
                             let subClassNode = getClassNodeStr(extStrs:extrTexts, classarm:classStr,classContent: subClassStr)
                             subClassNodes.append(subClassNode)
@@ -543,7 +553,7 @@ class ReadNode {
                 if !found {
                     if currentLine.ignoreEmpty().hasPrefix("extension") {
                         found = true
-                        let (subClassStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType)
+                        let (subClassStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType, currentType: .classType)
                         functionLineItems.removeSubrange(0 ..< lineCount)
                         let subExtension = getExtensionNodeStr(extStrs: extrTexts, classContent: subClassStr)
                         extensions.append(subExtension)
@@ -571,7 +581,7 @@ class ReadNode {
                         extrTexts.append(currentLine)
                         functionLineItems.removeFirst()
                     } else {
-                        let (subPropertyStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType)
+                        let (subPropertyStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType, currentType: .blockType)
                         functionLineItems.removeSubrange(0 ..< lineCount)
                         subLines.append(FunctionBlockNode(extStrs:extrTexts, code: subPropertyStr))
                         extrTexts.removeAll()
@@ -766,7 +776,7 @@ class ReadNode {
             if let data = try? FilePath.file(file: file).readData(), let codeStr = String(data: data, encoding: .utf8) {
                 
                 var newStr = replaceStr(originStr: codeStr, matchStr: "\"\"\"(\\s|.)*?\"\"\"")
-                newStr = replaceStr(originStr: newStr, matchStr: "\"(\\s|.)*?\"")
+                newStr = replaceStr(originStr: newStr, matchStr: "\"([^\"].*)\"")//"\"([^\"]*)\"" 有问题
                 writeStr(filePath: file, str: newStr)
                 
             }
@@ -896,18 +906,18 @@ class ReadNode {
             deletNote(filePathStr: filePathStr)
         }
         
-        var fileNodes:[FileNode] = []
-        for filePathStr in filePathStrs {
-            fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
-        }
-        
-        for fileNode in fileNodes {
-            let newCode:String = fileNode.getString()
-            let filePath = FilePath.file(file: fileNode.filePath)
-            if let data = newCode.data(using: .utf8) {
-                try? filePath.writeData(data)
-            }
-        }
+//        var fileNodes:[FileNode] = []
+//        for filePathStr in filePathStrs {
+//            fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
+//        }
+//
+//        for fileNode in fileNodes {
+//            let newCode:String = fileNode.getString()
+//            let filePath = FilePath.file(file: fileNode.filePath)
+//            if let data = newCode.data(using: .utf8) {
+//                try? filePath.writeData(data)
+//            }
+//        }
         for filePathStr in filePathStrs {
             reductionCustomStr(filePathStr: filePathStr)
         }
