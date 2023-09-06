@@ -23,29 +23,82 @@ open class SwiftFileProcessingPlugin: ProcessingFilePlugin {
 
         var parser = Parser(source)
         let fileSyntax = SourceFileSyntax.parse(from: &parser)
+        let walker = SwiftSyntaxWalker()
+        walker.walk(fileSyntax)
+            
     }
 }
 
-public final class SwiftFileProcessingWalker: SyntaxAnyVisitor {
+public final class SwiftSyntaxWalker: SyntaxAnyVisitor {
+    public enum SupportSyntaxDecl {
+        case `class`
+        case `protocol`
+        case `struct`
+        case `enum`
+        case `import`
+        case `extension`
+        case `func`
+        case macro
+        case variable
+        
+        public var syntaxDeclType: DeclSyntaxProtocol.Type {
+            switch self {
+            case .class: return ClassDeclSyntax.self
+            case .protocol: return ProtocolDeclSyntax.self
+            case .struct: return StructDeclSyntax.self
+            case .enum: return EnumDeclSyntax.self
+            case .import: return ImportDeclSyntax.self
+            case .extension: return ExtensionDeclSyntax.self
+            case .func: return FunctionDeclSyntax.self
+            case .macro: return IfConfigDeclSyntax.self
+            case .variable: return VariableDeclSyntax.self
+            }
+        }
+        
+        public func isSupportNode(_ node: Syntax) -> Bool {
+            switch self {
+            case .class: return node.isProtocol(ClassDeclSyntax) Class
+            case .protocol: return ProtocolDeclSyntax.self
+            case .struct: return StructDeclSyntax.self
+            case .enum: return EnumDeclSyntax.self
+            case .import: return ImportDeclSyntax.self
+            case .extension: return ExtensionDeclSyntax.self
+            case .func: return FunctionDeclSyntax.self
+            case .macro: return IfConfigDeclSyntax.self
+            case .variable: return VariableDeclSyntax.self
+            }
+        }
+    }
+    
+    public let supportSyntaxDecls: [SupportSyntaxDecl]
+    private let supportTypes: [DeclSyntaxProtocol.Type]
+    public init(viewMode: SyntaxTreeViewMode = .sourceAccurate, supportSyntaxDecls: [SupportSyntaxDecl] = []) {
+        if supportSyntaxDecls.isEmpty {
+            self.supportSyntaxDecls = [
+                .class, .protocol, .struct, .enum, .import, .extension, .func, .macro, .variable
+            ]
+        } else {
+            self.supportSyntaxDecls = supportSyntaxDecls
+        }
+        self.supportTypes = self.supportSyntaxDecls.map(\.syntaxDeclType)
+        super.init(viewMode: viewMode)
+    }
+    
+    private var walkSyntaxs: [Syntax] = []
+    
+    public func walkNode(_ node: Syntax) -> [Syntax] {
+        walk(node)
+        return walkSyntaxs
+    }
     
     public override func visitAny(_ node: Syntax) -> SyntaxVisitorContinueKind {
-        if node is DeclSyntaxProtocol {
-            
+        let condition: (DeclSyntaxProtocol.Type) -> Bool = {
+            node.asProtocol(<#T##SyntaxProtocol.Protocol#>)
+        }
+        if supportTypes.contains(where: condition) {
+            walkSyntaxs.append(node)
         }
         return .skipChildren
     }
-    
-    func visitCodeContainer<S: CustomCodeContainerSyntaxProtocol & DeclSyntaxProtocol & CustomNamedDeclSyntax>(_ node: S) {
-        CodeContainerSyntax(syntaxNode: node)
-    }
-    
-    func visitCode<S: CustomCodeSyntaxProtocol & SyntaxProtocol & CustomNamedDeclSyntax>(_ node: S) {
-        CodeSyntax(syntaxNode: node)
-    }
-    
-    public init(viewMode: SyntaxTreeViewMode = .sourceAccurate, syntax: SyntaxProtocol) {
-        
-    }
 }
-
 
