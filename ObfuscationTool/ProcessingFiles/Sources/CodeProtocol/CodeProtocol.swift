@@ -101,3 +101,19 @@ public extension CodeContainerProtocol {
         String(format: "%@ {%@\n}", entireDeclare, code.map(\.content).joined())
     }
 }
+
+extension CodeRawProtocol {
+    public func asCodeContainer(_ type: CodeContainerType) -> CodeContainerProtocol? {
+        if let container = self as? CodeContainerProtocol, container.type == type {
+            return container.asCodeContainer()
+        }
+        return nil
+    }
+    
+    public func asCode(_ type: CodeType) -> CodeProtocol? {
+        if let code = self as? CodeProtocol, code.type == type {
+            return code.asCode()
+        }
+        return nil
+    }
+}

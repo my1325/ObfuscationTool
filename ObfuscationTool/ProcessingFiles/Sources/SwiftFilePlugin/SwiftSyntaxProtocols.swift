@@ -85,32 +85,78 @@ extension ExtensionDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxP
 
 // MARK: - -
 
-struct CodeContainerSyntax<S: CustomCodeContainerSyntaxProtocol & CustomNamedDeclSyntax>: CodeContainerProtocol where S: DeclSyntaxProtocol {
-    var code: [CodeRawProtocol] = []
+public struct CodeContainerSyntax<S: CustomCodeContainerSyntaxProtocol & CustomNamedDeclSyntax>: CodeContainerProtocol where S: DeclSyntaxProtocol {
+    public private(set) var code: [CodeRawProtocol] = []
 
-    var rawName: String { syntaxNode.syntaxName }
+    public var rawName: String { syntaxNode.syntaxName }
 
-    var entireDeclare: String { syntaxNode.declareString }
+    public var entireDeclare: String { syntaxNode.declareString }
 
-    var type: CodeContainerType { syntaxNode.type }
+    public var type: CodeContainerType { syntaxNode.type }
     
-    let syntaxNode: S
-    init(syntaxNode: S) {
+    public let syntaxNode: S
+    public init(syntaxNode: S) {
+        self.syntaxNode = syntaxNode
+        self.code = SwiftSyntaxWalker(syntaxNode: syntaxNode)
+            .walk()
+            .map(\.asRawCode)
+    }
+}
+
+// MARK: --
+
+public struct CodeSyntax<S: CustomCodeSyntaxProtocol & CustomNamedDeclSyntax>: CodeProtocol where S: SyntaxProtocol {
+    public var rawName: String { syntaxNode.syntaxName }
+
+    public var content: String { syntaxNode.body }
+
+    public var type: CodeType { syntaxNode.type }
+
+    public let syntaxNode: S
+    public init(syntaxNode: S) {
         self.syntaxNode = syntaxNode
     }
 }
 
-// MARK: -
+// MARK: --
+extension SyntaxProtocol where Self: CustomCodeSyntaxProtocol, Self: CustomNamedDeclSyntax {
+    public func asCode() -> CodeProtocol {
+        CodeSyntax(syntaxNode: self)
+    }
+}
 
-struct CodeSyntax<S: CustomCodeSyntaxProtocol & CustomNamedDeclSyntax>: CodeProtocol where S: SyntaxProtocol {
-    var rawName: String { syntaxNode.syntaxName }
+extension DeclSyntaxProtocol where Self: CustomCodeContainerSyntaxProtocol, Self: CustomNamedDeclSyntax {
+    public func asCodeContainer() -> CodeContainerProtocol {
+        CodeContainerSyntax(syntaxNode: self)
+    }
+}
 
-    var content: String { syntaxNode.body }
-
-    var type: CodeType { syntaxNode.type }
-
-    let syntaxNode: S
-    init(syntaxNode: S) {
-        self.syntaxNode = syntaxNode
+extension SyntaxProtocol {
+    public var asRawCode: CodeRawProtocol {
+        if let node = self as? ClassDeclSyntax {
+            return CodeContainerSyntax(syntaxNode: node)
+        } else if let node = self as? StructDeclSyntax {
+            return CodeContainerSyntax(syntaxNode: node)
+        } else if let node = self as? EnumDeclSyntax {
+            return CodeContainerSyntax(syntaxNode: node)
+        } else if let node = self as? ProtocolDeclSyntax {
+            return CodeContainerSyntax(syntaxNode: node)
+        } else if let node = self as? ExtensionDeclSyntax {
+            return CodeContainerSyntax(syntaxNode: node)
+        } else if let node = self as? FunctionDeclSyntax {
+            return CodeSyntax(syntaxNode: node)
+        } else if let node = self as? VariableDeclSyntax {
+            return CodeSyntax(syntaxNode: node)
+        } else if let node = self as? TypeAliasDeclSyntax {
+            return CodeSyntax(syntaxNode: node)
+        } else if let node = self as? ImportDeclSyntax {
+            return CodeSyntax(syntaxNode: node)
+        } else if let node = self as? IfConfigDeclSyntax {
+            return CodeSyntax(syntaxNode: node)
+        } else if let node = self as? EnumCaseDeclSyntax {
+            return CodeSyntax(syntaxNode: node)
+        } else {
+            fatalError("unknown type \(self)")
+        }
     }
 }
