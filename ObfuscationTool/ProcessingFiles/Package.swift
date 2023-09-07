@@ -7,7 +7,7 @@ let package = Package(
 	name: "ProcessingFiles",
     platforms: [.macOS(.v10_15)],
     products: [
-        .library(name: "ProcessingFiles", targets: ["ProcessingFiles", "SwiftFilePlugin", "CodeProtocol"]),
+        .library(name: "ProcessingFiles", targets: ["ProcessingFiles", "SwiftFilePlugin", "CodeProtocol", "Plugins"]),
     ],
     dependencies: [
         .package(url: "https://github.com/my1325/FilePath.git", .branchItem("main")),
@@ -28,6 +28,12 @@ let package = Package(
             "FilePath",
             .product(name: "SwiftSyntax", package: "swift-syntax"),
             .product(name: "SwiftParser", package: "swift-syntax")
+        ]),
+        .target(name: "Plugins", dependencies: [
+            "CodeProtocol",
+            "ProcessingFiles",
+            "SwiftString",
+            "FilePath",
         ])
     ]
 )

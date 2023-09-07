@@ -25,16 +25,6 @@ public extension CodeProtocol {
     func asCode() -> Code {
         Code(type: type, content: content, rawName: rawName)
     }
-    
-    func renamed(_ name: String) -> CodeProtocol {
-        RenameCode(self, newName: name)
-            .asCode()!
-    }
-    
-    func replaceOrAddPrefrexToName(_ prefix: String, separator: Character?) -> CodeProtocol {
-        PrefixNameCode(self, prefix: prefix, prefixSeparator: separator)
-            .asCode()!
-    }
 }
 
 public struct CodeContainer: CodeContainerProtocol {
@@ -113,16 +103,6 @@ public extension CodeContainerProtocol {
         CodeContainer(type: type, entireDeclare: entireDeclare, code: code, rawName: rawName, content: content)
     }
     
-    func renamed(_ name: String) -> CodeContainerProtocol {
-        RenameCode(self, newName: name)
-            .asCodeContainer()!
-    }
-    
-    func replaceOrAddPrefrexToName(_ prefix: String, separator: Character?) -> CodeContainerProtocol {
-        PrefixNameCode(self, prefix: prefix, prefixSeparator: separator)
-            .asCodeContainer()!
-    }
-    
     func newCode(_ newCode: [CodeRawProtocol]) -> CodeContainer {
         CodeContainer(type: type, entireDeclare: entireDeclare, code: newCode, rawName: rawName)
     }
@@ -177,104 +157,5 @@ extension CodeContainer: CodeShullffleProtocol {
             codes = codes.shuffled()
         }
         return CodeContainer(type: type, entireDeclare: entireDeclare, code: codes, rawName: rawName)
-    }
-}
-
-// MARK: - rename
-
-protocol CodeInnerProtocol {
-    var innerCode: CodeRawProtocol { get }
-    
-    var isCode: Bool { get }
-    
-    var isCodeContainer: Bool { get }
-    
-    func asCode() -> CodeProtocol?
-    
-    func asCodeContainer() -> CodeContainerProtocol?
-}
-
-extension CodeInnerProtocol where Self: CodeRawProtocol {
-    
-    var isCode: Bool {
-        innerCode is CodeProtocol
-    }
-    
-    var isCodeContainer: Bool {
-        innerCode is CodeContainerProtocol
-    }
-    
-    func asCode() -> CodeProtocol? {
-        guard let code = innerCode as? CodeProtocol else { return nil }
-        return Code(type: code.type, content: content, rawName: rawName)
-    }
-    
-    func asCodeContainer() -> CodeContainerProtocol? {
-        guard let code = innerCode as? CodeContainerProtocol else { return nil }
-        return CodeContainer(type: code.type,
-                             entireDeclare: code.entireDeclare,
-                             code: code.code,
-                             rawName: rawName,
-                             content: content)
-    }
-    
-    func asRawCode() -> CodeRawProtocol {
-        if isCode { return asCode()! }
-        return asCodeContainer()!
-    }
-}
-
-struct RenameCode: CodeRawProtocol, CodeInnerProtocol {
-    let innerCode: CodeRawProtocol
-    let newName: String
-    init(_ code: CodeRawProtocol, newName: String) {
-        self.innerCode = code
-        self.newName = newName
-    }
-    
-    var rawName: String { newName }
-    
-    var content: String { innerCode.content.replacingOccurrences(of: innerCode.rawName, with: newName) }
-    
-    var order: CodeOrder { innerCode.order }
-    
-    func asCodeContainer() -> CodeContainerProtocol? {
-        guard let code = innerCode as? CodeContainerProtocol else { return nil }
-        return CodeContainer(type: code.type,
-                             entireDeclare: code.entireDeclare.replacingOccurrences(of: code.rawName, with: newName),
-                             code: code.code,
-                             rawName: rawName,
-                             content: content)
-    }
-}
-
-struct PrefixNameCode: CodeRawProtocol, CodeInnerProtocol {
-    private(set) var content: String = ""
-    
-    private(set) var order: CodeOrder = .none
-    
-    private(set) var rawName: String = ""
-    
-    let innerCode: CodeRawProtocol
-    let prefix: String
-    let separator: Character?
-    init(_ innerCode: CodeRawProtocol, prefix: String, prefixSeparator: Character?) {
-        self.innerCode = innerCode
-        self.prefix = prefix
-        self.separator = prefixSeparator
-    }
-    
-    func asCode() -> CodeProtocol? {
-        guard let code = innerCode as? CodeProtocol else { return nil }
-        let newName = code.rawName.replaceOrAddPrefix(prefix, separator: separator)
-        return RenameCode(innerCode, newName: newName)
-            .asCode()
-    }
-    
-    func asCodeContainer() -> CodeContainerProtocol? {
-        guard let code = innerCode as? CodeContainerProtocol else { return nil }
-        let newName = code.rawName.replaceOrAddPrefix(prefix, separator: separator)
-        return RenameCode(code, newName: newName)
-            .asCodeContainer()
     }
 }

@@ -13,11 +13,17 @@ public protocol ProcessingFilePlugin {
     func processingManager(_ manager: ProcessingManager, processedFile file: FilePathProtocol) throws -> [CodeRawProtocol]
 }
 
+public protocol ProcessingFileHandlePlugin {
+    func processingManager(_ manager: ProcessingManager, didProcessedFiles files: [ProcessingFile]) -> [ProcessingFile]
+}
+
 public final class ProcessingManager {
         
+    public let fileHandlePlugins: [ProcessingFileHandlePlugin]
     public let path: PathProtocol
-    public init(path: PathProtocol) {
+    public init(path: PathProtocol, fileHandlePlugins: [ProcessingFileHandlePlugin]) {
         self.path = path
+        self.fileHandlePlugins = fileHandlePlugins
     }
     
     public private(set) var pluginCache: [FileType: ProcessingFilePlugin] = [:]
@@ -37,11 +43,11 @@ public final class ProcessingManager {
         guard path.isExists else { return [] }
         if path.isFile {
             if let processedFile = processingFile(path as! FilePath) {
-                return [processedFile]
+                return handleFiles([processedFile])
             }
             return []
         } else {
-            return processingDirectory(path as! DirectoryPath)
+            return handleFiles(processingDirectory(path as! DirectoryPath))
         }
     }
 }
@@ -49,8 +55,11 @@ public final class ProcessingManager {
 // MARK: - Private
 extension ProcessingManager {
     
+    private func handleFiles(_ files: [ProcessingFile]) -> [ProcessingFile] {
+        fileHandlePlugins.reduce(files, { $1.processingManager(self, didProcessedFiles: $0) })
+    }
+    
     private func processingFile(_ filePath: FilePath) -> ProcessingFile? {
-        
         let fileType = FileType(ext: filePath.pathExtension)
         do {
             if let handlePlugin = pluginCache[fileType] {
@@ -66,7 +75,6 @@ extension ProcessingManager {
     }
     
     private func processingDirectory(_ direcotryPath: DirectoryPath) -> [ProcessingFile] {
-        
         var processedFiles: [ProcessingFile] = []
         for path in direcotryPath.directoryIterator() {
             if path.isFile {

@@ -36,14 +36,18 @@ public enum CodeType {
     case line
     case `func`
     case `import`
+    case `init`
+    case `deinit`
+    case `subscript`
     case macro
     
     public var order: CodeOrder {
         switch self {
-        case .import: return .topMost
+        case .import, .`init`: return .topMost
         case .line, .macro: return .top
         case .property: return .top
-        case .func: return .middle
+        case .subscript, .func: return .middle
+        case .deinit: return .bottomMost
         }
     }
 }
@@ -116,6 +120,14 @@ public extension CodeContainerProtocol {
 }
 
 extension CodeRawProtocol {
+    public var isCode: Bool {
+        self is CodeProtocol
+    }
+    
+    public var isCodeContainer: Bool {
+        self is CodeContainerProtocol
+    }
+    
     public func asCodeContainer(_ type: CodeContainerType) -> CodeContainerProtocol? {
         if let container = self as? CodeContainerProtocol, container.type == type {
             return container.asCodeContainer()

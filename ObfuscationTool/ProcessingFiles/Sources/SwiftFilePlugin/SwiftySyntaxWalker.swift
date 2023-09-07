@@ -18,6 +18,9 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
         case `extension`
         case `func`
         case `typealias`
+        case `init`
+        case `deinit`
+        case `subscript`
         case macro
         case variable
         case enumCase
@@ -29,13 +32,7 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
                 supportSyntaxDecls: [SupportSyntaxDecl] = [],
                 syntaxNode: SyntaxProtocol)
     {
-        if supportSyntaxDecls.isEmpty {
-            self.supportSyntaxDecls = [
-                .class, .protocol, .struct, .enum, .import, .extension, .func, .macro, .variable, .enumCase
-            ]
-        } else {
-            self.supportSyntaxDecls = supportSyntaxDecls
-        }
+        self.supportSyntaxDecls = supportSyntaxDecls
         self.syntaxNode = syntaxNode
         super.init(viewMode: viewMode)
     }
@@ -51,7 +48,7 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
     @discardableResult
     private func appnedNode(_ node: SyntaxProtocol, supportType: SupportSyntaxDecl) -> SyntaxVisitorContinueKind {
         guard node._syntaxNode != syntaxNode._syntaxNode,
-                supportSyntaxDecls.contains(supportType)
+              supportSyntaxDecls.isEmpty || supportSyntaxDecls.contains(supportType)
         else {
             return .visitChildren
         }
@@ -101,5 +98,17 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
     
     override public func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
         appnedNode(node, supportType: .enumCase)
+    }
+    
+    public override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+        appnedNode(node, supportType: .`init`)
+    }
+    
+    public override func visit(_ node: DeinitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+        appnedNode(node, supportType: .deinit)
+    }
+    
+    public override func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
+        appnedNode(node, supportType: .subscript)
     }
 }

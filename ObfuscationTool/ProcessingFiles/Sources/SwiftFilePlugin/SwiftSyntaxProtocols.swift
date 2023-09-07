@@ -15,7 +15,7 @@ public protocol CustomNamedDeclSyntax {
 
 public extension CustomNamedDeclSyntax where Self: SyntaxProtocol {
     var syntaxName: String {
-        tokens(viewMode: .sourceAccurate).first(where: { !$0.text.isEmpty })?.text ?? ""
+        ""
     }
 
     var body: String {
@@ -24,6 +24,26 @@ public extension CustomNamedDeclSyntax where Self: SyntaxProtocol {
 
     func contentForToken(_ token: SyntaxProtocol) -> String {
         String(data: Data(token.syntaxTextBytes), encoding: .utf8)!
+    }
+}
+
+extension TokenKind {
+    var isVariable: Bool {
+        switch self {
+        case let .keyword(keyword): return [Keyword.var, .let].contains(keyword)
+        default: return false
+        }
+    }
+}
+
+extension CustomNamedDeclSyntax where Self == VariableDeclSyntax {
+    public var syntaxName: String {
+        if let token = self.tokens(viewMode: .sourceAccurate).first(where: { $0.tokenKind.isVariable }),
+           let name = token.nextToken(viewMode: .sourceAccurate)?.text
+        {
+            return name
+        }
+        return ""
     }
 }
 
@@ -65,6 +85,9 @@ extension CustomCodeSyntaxProtocol {
         case is FunctionDeclSyntax: return .func
         case is ImportDeclSyntax: return .import
         case is IfConfigDeclSyntax: return .macro
+        case is InitializerDeclSyntax: return .`init`
+        case is DeinitializerDeclSyntax: return .deinit
+        case is SubscriptDeclSyntax: return .subscript
         default: return .line
         }
     }
@@ -76,6 +99,9 @@ extension ImportDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
 extension IfConfigDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
 extension TypeAliasDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
 extension EnumCaseDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
+extension InitializerDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
+extension DeinitializerDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
+extension SubscriptDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
 
 extension ClassDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
 extension StructDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
@@ -154,6 +180,12 @@ extension SyntaxProtocol {
         } else if let node = self as? IfConfigDeclSyntax {
             return CodeSyntax(syntaxNode: node)
         } else if let node = self as? EnumCaseDeclSyntax {
+            return CodeSyntax(syntaxNode: node)
+        } else if let node = self as? InitializerDeclSyntax {
+            return CodeSyntax(syntaxNode: node)
+        } else if let node = self as? DeinitializerDeclSyntax {
+            return CodeSyntax(syntaxNode: node)
+        } else if let node = self as? SubscriptDeclSyntax {
             return CodeSyntax(syntaxNode: node)
         } else {
             fatalError("unknown type \(self)")
