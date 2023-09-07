@@ -20,7 +20,7 @@ let leftPropertyCodes:[String] = ["{","(","<","\""]
 //语法右边
 let rightPropertyCodes:[String] = ["}",")",">","\""]
 
-let classNames:[String] = ["enum ", "class ", "struct ", "protocol "]
+let classNames:[String] = ["protocol ", "enum ", "class ", "struct "]
 
 
 
@@ -502,6 +502,9 @@ class ReadNode {
         var extrTexts:[String] = []
         while functionLineItems.count > 0 {
             let currentLine = functionLineItems.first ?? ""
+            if currentLine == "public protocol DIMOSegmentedViewRTLCompatible: class {" {
+                print("slds;lsdl")
+            }
             if currentLine == "" {
                 functionLineItems.removeFirst()
                 continue
@@ -532,6 +535,7 @@ class ReadNode {
                         functionLineItems.removeSubrange(0 ..< lineCount)
                         subLines.append(FunctionBlockNode(extStrs:extrTexts, code: subPropertyStr))
                         extrTexts.removeAll()
+                        break
                     }
 
                 }
@@ -540,11 +544,13 @@ class ReadNode {
                     for classStr in classNames {
                         if currentLine.contains(classStr) {
                             found = true
+                            assert(functionLineItems.count != 0)
                             let (subClassStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType, currentType: .classType)
                             functionLineItems.removeSubrange(0 ..< lineCount)
                             let subClassNode = getClassNodeStr(extStrs:extrTexts, classarm:classStr,classContent: subClassStr)
                             subClassNodes.append(subClassNode)
                             extrTexts.removeAll()
+                            break
                         }
                     }
                 }
@@ -669,10 +675,15 @@ class ReadNode {
         var filePaths:[String] = []
         var isDir:ObjCBool = true
         _ = FileManager.default.fileExists(atPath: rootDirectorPath, isDirectory: &isDir)
+        let judgeFile:((String?) -> Bool) = { str in
+//            return str == "h" || str == "m" || str == "c"
+            return str == "swift"
+        }
         
         if !isDir.boolValue {
             let fileUrl = URL(string: rootDirectorPath)
-            if fileUrl?.pathExtension == "swift" {
+            
+            if judgeFile(fileUrl?.pathExtension) {
                 filePaths.append(rootDirectorPath)
             }
             return filePaths
@@ -684,7 +695,7 @@ class ReadNode {
             let filePath:String = "\(rootDirectorPath)/\(fileName)"
             if FileManager.default.fileExists(atPath: filePath, isDirectory: &isDir), let fileUrl = URL(string: filePath) {
                 if !isDir.boolValue {
-                    if fileUrl.pathExtension == "swift" {
+                    if judgeFile(fileUrl.pathExtension) {
                         filePaths.append(filePath)
                     }
                 } else {
@@ -776,6 +787,19 @@ class ReadNode {
             if let data = try? FilePath.file(file: file).readData(), let codeStr = String(data: data, encoding: .utf8) {
                 
                 var newStr = replaceStr(originStr: codeStr, matchStr: "\"\"\"(\\s|.)*?\"\"\"")
+                /*
+                 "\"([^\"].*)\""
+                 
+                 let dimo_path:String = Bundle.main.path(forResource: "DIMOEULA", ofType: "txt") ?? "" -> let dimo_path:String = Bundle.main.path(XXXXX
+                 
+                 
+                 "\"([^\"]*)\""
+                 case 34: append(staticText: "\\\"")
+                 case 92: append(staticText: "\\\\")
+                 ->
+                 case 34: append(staticText: xxxxx xxxxx\\\\")
+                 */
+                
                 newStr = replaceStr(originStr: newStr, matchStr: "\"([^\"].*)\"")//"\"([^\"]*)\"" 有问题
                 writeStr(filePath: file, str: newStr)
                 
@@ -906,18 +930,18 @@ class ReadNode {
             deletNote(filePathStr: filePathStr)
         }
         
-//        var fileNodes:[FileNode] = []
-//        for filePathStr in filePathStrs {
-//            fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
-//        }
-//
-//        for fileNode in fileNodes {
-//            let newCode:String = fileNode.getString()
-//            let filePath = FilePath.file(file: fileNode.filePath)
-//            if let data = newCode.data(using: .utf8) {
-//                try? filePath.writeData(data)
-//            }
-//        }
+        var fileNodes:[FileNode] = []
+        for filePathStr in filePathStrs {
+            fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
+        }
+
+        for fileNode in fileNodes {
+            let newCode:String = fileNode.getString()
+            let filePath = FilePath.file(file: fileNode.filePath)
+            if let data = newCode.data(using: .utf8) {
+                try? filePath.writeData(data)
+            }
+        }
         for filePathStr in filePathStrs {
             reductionCustomStr(filePathStr: filePathStr)
         }
