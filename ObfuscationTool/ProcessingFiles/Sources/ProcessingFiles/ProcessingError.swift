@@ -9,7 +9,7 @@ import Foundation
 import FilePath
 
 public enum ProcessingError: Error {
-    case fileReadError(Path)
+    case fileReadError(PathProtocol)
     case notPluginForFileType(FileType)
     case underlying(Error)
 }

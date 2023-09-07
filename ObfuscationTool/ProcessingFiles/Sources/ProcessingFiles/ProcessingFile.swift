@@ -53,19 +53,21 @@ public final class ProcessingFile {
             .filter { !trimWhiteSpaceLine || !$0.isEmpty }
             .count
     }
-    
+
     public func getCodeContainer(_ type: CodeContainerType) -> [CodeContainerProtocol] {
-        codes.map({ $0.asCodeContainer(type) })
-            .filter({ $0 != nil })
-            .map({ $0! })
+        codes.map { $0.asCodeContainer(type) }
+            .filter { $0 != nil }
+            .map { $0! }
     }
-    
+
     public func getCode(_ type: CodeType) -> [CodeProtocol] {
-        codes.map({ $0.asCode(type) })
-            .filter({ $0 != nil })
-            .map({ $0! })
+        codes.map { $0.asCode(type) }
+            .filter { $0 != nil }
+            .map { $0! }
     }
 }
+
+// MARK: - shulffle
 
 extension ProcessingFile: CodeShullffleProtocol {
     public func shulffle(_ order: Bool) {
@@ -94,5 +96,116 @@ extension ProcessingFile: CodeShullffleProtocol {
         let file = ProcessingFile(filePath: filePath, fileType: fileType)
         file.setCodes(codes)
         return file
+    }
+}
+
+// MARK: - Name
+
+extension ProcessingFile {
+    public func renameCode(_ codeType: [CodeType], newName: String) {
+        setCodes(codes.map { rawCode -> CodeRawProtocol in
+            if let code = rawCode as? CodeContainerProtocol {
+                return self.renameCodeInContainer(code, codeType: codeType, newName: newName)
+            } else if let code = rawCode as? CodeProtocol, codeType.contains(code.type) {
+                return code.asCode().renamed(newName)
+            } else {
+                return rawCode
+            }
+        })
+    }
+
+    public func renameCodeContainer(_ codeContainerType: [CodeContainerType], newName: String) {
+        setCodes(codes.map { rawCode -> CodeRawProtocol in
+            if let code = rawCode as? CodeContainerProtocol, codeContainerType.contains(code.type) {
+                return self.renameCodeContainer(code, codeContainerType: codeContainerType, newName: newName)
+            }
+            return rawCode
+        })
+    }
+
+    public func addOrReplacePrefixWithCode(_ codeType: [CodeType],
+                                           prefix: String,
+                                           separator: Character?)
+    {
+        setCodes(codes.map { rawCode -> CodeRawProtocol in
+            if let code = rawCode as? CodeContainerProtocol {
+                return self.addOrReplacePrefixWithCode(code, codeType: codeType, prefix: prefix, separator: separator)
+            } else if let code = rawCode as? CodeProtocol, codeType.contains(code.type) {
+                return code.asCode().replaceOrAddPrefrexToName(prefix, separator: separator)
+            } else {
+                return rawCode
+            }
+        })
+    }
+
+    public func addOrReplaceNameWithCodeContainer(_ codeContainerType: [CodeContainerType],
+                                                  prefix: String,
+                                                  separator: Character?)
+    {
+        setCodes(codes.map { rawCode -> CodeRawProtocol in
+            if let code = rawCode as? CodeContainerProtocol, codeContainerType.contains(code.type) {
+                return self.addOrReplacePrefixWithCodeContainer(code, codeContainerType: codeContainerType, prefix: prefix, separator: separator)
+            }
+            return rawCode
+        })
+    }
+
+    // MARK: - Private
+
+    private func renameCodeInContainer(_ codeContainer: CodeContainerProtocol,
+                                       codeType: [CodeType],
+                                       newName: String) -> CodeContainerProtocol
+    {
+        codeContainer
+            .mapCodeContainer {
+                self.renameCodeInContainer($0, codeType: codeType, newName: newName)
+            }
+            .mapCode(codeType, block: {
+                $0.asCode().renamed(newName)
+            })
+            .asCodeContainer()
+    }
+
+    private func renameCodeContainer(_ codeContainer: CodeContainerProtocol,
+                                     codeContainerType: [CodeContainerType],
+                                     newName: String) -> CodeContainerProtocol
+    {
+        codeContainer
+            .mapCodeContainer(codeContainerType, block: {
+                self.renameCodeContainer($0, codeContainerType: codeContainerType, newName: newName)
+            })
+            .asCodeContainer()
+            .renamed(newName)
+    }
+
+    private func addOrReplacePrefixWithCode(_ codeContainer: CodeContainerProtocol,
+                                            codeType: [CodeType],
+                                            prefix: String,
+                                            separator: Character?) -> CodeContainerProtocol
+    {
+        codeContainer
+            .mapCodeContainer {
+                self.addOrReplacePrefixWithCode($0, codeType: codeType, prefix: prefix, separator: separator)
+            }
+            .mapCode(codeType, block: {
+                $0.asCode().replaceOrAddPrefrexToName(prefix, separator: separator)
+            })
+            .asCodeContainer()
+    }
+
+    private func addOrReplacePrefixWithCodeContainer(_ codeContainer: CodeContainerProtocol,
+                                                     codeContainerType: [CodeContainerType],
+                                                     prefix: String,
+                                                     separator: Character?) -> CodeContainerProtocol
+    {
+        codeContainer
+            .mapCodeContainer(codeContainerType, block: {
+                self.addOrReplacePrefixWithCodeContainer($0,
+                                                         codeContainerType: codeContainerType,
+                                                         prefix: prefix,
+                                                         separator: separator)
+            })
+            .asCodeContainer()
+            .replaceOrAddPrefrexToName(prefix, separator: separator)
     }
 }

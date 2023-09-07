@@ -18,7 +18,7 @@ class ViewController: NSViewController {
     }
     
     func testProcessingFile() {
-        let filePath = Directory.desktop.appendFileName("SwiftFileIdentifierCache", ext: ".swift")
+        let filePath = DirectoryPath.desktop.appendFileName("SwiftFileIdentifierCache", ext: ".swift")
         let swiftFilePlugin = SwiftFileProcessingPlugin()
         let processingManager = ProcessingManager(path: filePath)
         processingManager.registerPlugin(swiftFilePlugin, forFileType: .fSwift)

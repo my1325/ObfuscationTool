@@ -92,6 +92,7 @@ public protocol CodeContainerProtocol: CodeRawProtocol {
     var code: [CodeRawProtocol] { get }
 }
 
+// MARK: -- Extensions
 public extension CodeContainerProtocol {
     var order: CodeOrder {
         type.order
@@ -99,6 +100,18 @@ public extension CodeContainerProtocol {
     
     var content: String {
         String(format: "%@ {%@\n}", entireDeclare, code.map(\.content).joined())
+    }
+    
+    func getCodeForType(_ type: CodeType) -> [CodeProtocol] {
+        code.map({ $0.asCode(type) })
+            .filter({ $0 != nil })
+            .map({ $0! })
+    }
+    
+    func getCodeContainerForType(_ type: CodeContainerType) -> [CodeContainerProtocol] {
+        code.map({ $0.asCodeContainer(type) })
+            .filter({ $0 != nil })
+            .map({ $0! })
     }
 }
 

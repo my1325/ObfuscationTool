@@ -10,13 +10,13 @@ import FilePath
 import CodeProtocol
 
 public protocol ProcessingFilePlugin {
-    func processingManager(_ manager: ProcessingManager, processedFile file: FilePath) throws -> [CodeRawProtocol]
+    func processingManager(_ manager: ProcessingManager, processedFile file: FilePathProtocol) throws -> [CodeRawProtocol]
 }
 
 public final class ProcessingManager {
         
-    public let path: Path
-    public init(path: Path) {
+    public let path: PathProtocol
+    public init(path: PathProtocol) {
         self.path = path
     }
     

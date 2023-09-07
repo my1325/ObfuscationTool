@@ -15,7 +15,7 @@ import FilePath
 open class SwiftFileProcessingPlugin: ProcessingFilePlugin {
     public init() {}
         
-    public func processingManager(_ manager: ProcessingManager, processedFile file: FilePath) throws -> [CodeRawProtocol] {
+    public func processingManager(_ manager: ProcessingManager, processedFile file: FilePathProtocol) throws -> [CodeRawProtocol] {
         let url = URL(fileURLWithPath: file.path)
         let data = try Data(contentsOf: url)
         guard let source = String(data: data, encoding: .utf8) else {
