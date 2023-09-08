@@ -34,6 +34,13 @@ extension TokenKind {
         default: return false
         }
     }
+    
+    var isIdentifier: Bool {
+        switch self {
+        case .identifier: return true
+        default: return false
+        }
+    }
 }
 
 extension CustomNamedDeclSyntax where Self == VariableDeclSyntax {
@@ -42,6 +49,15 @@ extension CustomNamedDeclSyntax where Self == VariableDeclSyntax {
            let name = token.nextToken(viewMode: .sourceAccurate)?.text
         {
             return name
+        }
+        return ""
+    }
+}
+
+extension CustomNamedDeclSyntax where Self == EnumCaseDeclSyntax {
+    public var syntaxName: String {
+        if let token = self.tokens(viewMode: .sourceAccurate).first(where: { $0.tokenKind.isIdentifier }) {
+            return token.text
         }
         return ""
     }
@@ -85,6 +101,7 @@ extension CustomCodeSyntaxProtocol {
         case is InitializerDeclSyntax: return .`init`
         case is DeinitializerDeclSyntax: return .deinit
         case is SubscriptDeclSyntax: return .subscript
+        case is EnumCaseDeclSyntax: return .enumCase
         default: return .line
         }
     }

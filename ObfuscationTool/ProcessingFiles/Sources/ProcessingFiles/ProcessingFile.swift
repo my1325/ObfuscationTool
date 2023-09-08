@@ -72,35 +72,3 @@ public final class ProcessingFile {
         return file
     }
 }
-
-// MARK: - shulffle
-
-extension ProcessingFile: CodeShullffleProtocol {
-    public func shulffle(_ order: Bool) {
-        var codes = self.codes.map { shulffle($0, order: order) }
-        if order {
-            codes = codes.sorted(by: { $0.order < $1.order })
-                .grouped { $0.order == $1.order }
-                .map { $0.shuffled() }
-                .flatMap { $0 }
-        } else {
-            codes = codes.shuffled()
-        }
-        self.codes = codes
-    }
-
-    public func shulffed(_ order: Bool) -> ProcessingFile {
-        var codes = codes.map { shulffle($0, order: order) }
-        if order {
-            codes = codes.sorted(by: { $0.order < $1.order })
-                .grouped { $0.order == $1.order }
-                .map { $0.shuffled() }
-                .flatMap { $0 }
-        } else {
-            codes = codes.shuffled()
-        }
-        let file = ProcessingFile(filePath: filePath, fileType: fileType)
-        file.setCodes(codes)
-        return file
-    }
-}

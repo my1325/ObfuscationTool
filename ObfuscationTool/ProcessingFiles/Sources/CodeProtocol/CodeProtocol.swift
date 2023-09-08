@@ -34,6 +34,7 @@ public struct CodeOrder: Comparable {
 public enum CodeType {
     case property
     case line
+    case enumCase
     case `func`
     case `import`
     case `init`
@@ -43,7 +44,7 @@ public enum CodeType {
     
     public var order: CodeOrder {
         switch self {
-        case .import, .`init`: return .topMost
+        case .import, .`init`, .enumCase: return .topMost
         case .line, .macro: return .top
         case .property: return .top
         case .subscript, .func: return .middle

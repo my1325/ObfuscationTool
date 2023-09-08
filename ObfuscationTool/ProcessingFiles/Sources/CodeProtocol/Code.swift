@@ -138,33 +138,3 @@ public extension CodeContainerProtocol {
         })
     }
 }
-
-// MARK: - Shullffle
-
-public protocol CodeShullffleProtocol {
-    func shulffed(_ order: Bool) -> Self
-}
-
-public extension CodeShullffleProtocol {
-    func shulffle(_ code: CodeRawProtocol, order: Bool) -> CodeRawProtocol {
-        if let codeContainer = code as? CodeContainerProtocol {
-            return codeContainer.asCodeContainer().shulffed(order)
-        }
-        return code
-    }
-}
-
-extension CodeContainer: CodeShullffleProtocol {
-    public func shulffed(_ order: Bool) -> CodeContainer {
-        var codes = code.map { shulffle($0, order: order) }
-        if order {
-            codes = codes.sorted(by: { $0.order < $1.order })
-                .grouped { $0.order == $1.order }
-                .map { $0.shuffled() }
-                .flatMap { $0 }
-        } else {
-            codes = codes.shuffled()
-        }
-        return CodeContainer(type: type, entireDeclareWord: entireDeclareWord, code: codes, rawName: rawName)
-    }
-}
