@@ -20,7 +20,7 @@ class ViewController: NSViewController {
     
     func testProcessingFile() {
         let filePath = DirectoryPath.desktop.appendFileName("ObfuscationToolTest", ext: "swift")
-        let plugin = FileStringHandlePlugin([.prefix(mode: .addOrReplace, prefix: "ot", separator: "_")])
+        let plugin = FileStringHandlePlugin([.prefix(mode: .addOrReplace, prefix: "ot", separator: "_")], codeType: [.func, .property, .line])
         let processingManager = ProcessingManager(path: filePath, fileHandlePlugins: [plugin])
         processingManager.registerPlugin(SwiftFileProcessingPlugin(), forFileType: .fSwift)
         do {

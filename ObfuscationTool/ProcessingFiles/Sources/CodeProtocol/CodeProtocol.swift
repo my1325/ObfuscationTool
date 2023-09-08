@@ -70,12 +70,25 @@ public enum CodeContainerType {
     }
 }
 
+public enum CodeRawWordIdentifier {
+   case identifier
+   case word
+}
+
+public protocol CodeRawWordProtocol {
+    var identifier: CodeRawWordIdentifier { get }
+    
+    var content: String { get }
+}
+
 public protocol CodeRawProtocol {
     var content: String { get }
     
     var order: CodeOrder { get }
     
     var rawName: String { get }
+    
+    var words: [CodeRawWordProtocol] { get }
 }
 
 public protocol CodeProtocol: CodeRawProtocol {
@@ -86,10 +99,16 @@ public extension CodeProtocol {
     var order: CodeOrder {
         type.order
     }
+    
+    var content: String {
+        words.map(\.content).joined()
+    }
 }
 
 public protocol CodeContainerProtocol: CodeRawProtocol {
     var type: CodeContainerType { get }
+    
+    var entireDeclareWord: [CodeRawWordProtocol] { get }
     
     var entireDeclare: String { get }
         
@@ -98,12 +117,20 @@ public protocol CodeContainerProtocol: CodeRawProtocol {
 
 // MARK: -- Extensions
 public extension CodeContainerProtocol {
+    var entireDeclare: String {
+        entireDeclareWord.map(\.content).joined()
+    }
+    
     var order: CodeOrder {
         type.order
     }
     
     var content: String {
         String(format: "%@ {%@\n}", entireDeclare, code.map(\.content).joined())
+    }
+    
+    var words: [CodeRawWordProtocol] {
+        code.map(\.words).flatMap({ $0 })
     }
     
     func getCodeForType(_ type: CodeType) -> [CodeProtocol] {

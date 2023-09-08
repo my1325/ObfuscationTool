@@ -7,56 +7,65 @@
 
 import Foundation
 
+public struct CodeRawWord: CodeRawWordProtocol {
+    public var identifier: CodeRawWordIdentifier
+    
+    public var content: String
+
+    public init(identifier: CodeRawWordIdentifier, content: String) {
+        self.identifier = identifier
+        self.content = content
+    }
+}
+
+extension CodeRawWordProtocol {
+    public func asWord() -> CodeRawWord {
+        CodeRawWord(identifier: identifier, content: content)
+    }
+    
+    public func newWord(_ content: String) -> CodeRawWordProtocol {
+        CodeRawWord(identifier: identifier, content: content)
+    }
+}
+
 public struct Code: CodeProtocol {
     public let type: CodeType
-    
-    public let content: String
-    
+        
     public let rawName: String
     
-    public init(type: CodeType, content: String, rawName: String) {
+    public let words: [CodeRawWordProtocol]
+    
+    public init(type: CodeType, words: [CodeRawWordProtocol], rawName: String) {
         self.type = type
-        self.content = content
+        self.words = words
         self.rawName = rawName
     }
 }
 
 public extension CodeProtocol {
     func asCode() -> Code {
-        Code(type: type, content: content, rawName: rawName)
+        Code(type: type, words: words, rawName: rawName)
     }
 }
 
 public struct CodeContainer: CodeContainerProtocol {
+    public var entireDeclareWord: [CodeRawWordProtocol]
+    
     public let type: CodeContainerType
-    
-    public let entireDeclare: String
-    
+        
     public let code: [CodeRawProtocol]
     
     public let rawName: String
     
-    public var content: String {
-        if _content.isEmpty {
-            return String(format: "%@ {%@\n}", entireDeclare, code.map(\.content).joined())
-        } else {
-            return _content
-        }
-    }
-    
-    private let _content: String
-    
     public init(type: CodeContainerType,
-                entireDeclare: String,
+                entireDeclareWord: [CodeRawWordProtocol],
                 code: [CodeRawProtocol],
-                rawName: String,
-                content: String = "")
+                rawName: String)
     {
         self.type = type
-        self.entireDeclare = entireDeclare
+        self.entireDeclareWord = entireDeclareWord
         self.code = code
         self.rawName = rawName
-        self._content = content
     }
 }
 
@@ -100,15 +109,15 @@ public struct CodeMapLazyContainer {
 public extension CodeContainerProtocol {
     
     func asCodeContainer() -> CodeContainer {
-        CodeContainer(type: type, entireDeclare: entireDeclare, code: code, rawName: rawName, content: content)
+        CodeContainer(type: type, entireDeclareWord: entireDeclareWord, code: code, rawName: rawName)
     }
     
-    func newCode(_ newCode: [CodeRawProtocol]) -> CodeContainer {
-        CodeContainer(type: type, entireDeclare: entireDeclare, code: newCode, rawName: rawName)
+    func newCode(_ newCode: [CodeRawProtocol], newDeclareWord: [CodeRawWordProtocol]) -> CodeContainer {
+        CodeContainer(type: type, entireDeclareWord: newDeclareWord, code: newCode, rawName: rawName)
     }
     
     func mapRawCode(_ block: @escaping (CodeRawProtocol) -> CodeRawProtocol) -> CodeContainerProtocol {
-        newCode(code.map(block))
+        newCode(code.map(block), newDeclareWord: entireDeclareWord)
     }
     
     func mapCode(_ type: [CodeType] = [], block: @escaping (CodeProtocol) -> CodeProtocol) -> CodeMapLazyContainer {
@@ -156,6 +165,6 @@ extension CodeContainer: CodeShullffleProtocol {
         } else {
             codes = codes.shuffled()
         }
-        return CodeContainer(type: type, entireDeclare: entireDeclare, code: codes, rawName: rawName)
+        return CodeContainer(type: type, entireDeclareWord: entireDeclareWord, code: codes, rawName: rawName)
     }
 }

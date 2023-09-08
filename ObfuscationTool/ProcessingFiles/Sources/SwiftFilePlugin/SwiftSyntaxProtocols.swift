@@ -48,11 +48,8 @@ extension CustomNamedDeclSyntax where Self == VariableDeclSyntax {
 }
 
 public extension CustomNamedDeclSyntax where Self: DeclSyntaxProtocol {
-    var declareString: String {
-        tokens(viewMode: .sourceAccurate)
-            .prefix(while: { $0.tokenKind != .leftBrace })
-            .map { contentForToken($0) }
-            .joined()
+    var declareTokens: [TokenSyntax] {
+        tokens(viewMode: .sourceAccurate).prefix(while: { $0.tokenKind != .leftBrace })
     }
 }
 
@@ -112,29 +109,50 @@ extension ExtensionDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxP
 // MARK: - -
 
 public struct CodeContainerSyntax<S: CustomCodeContainerSyntaxProtocol & CustomNamedDeclSyntax>: CodeContainerProtocol where S: DeclSyntaxProtocol {
-    public private(set) var code: [CodeRawProtocol] = []
+    public var entireDeclareWord: [CodeRawWordProtocol] { syntaxNode.declareTokens }
+    
+    public var code: [CodeRawProtocol] {
+        SwiftSyntaxWalker(syntaxNode: syntaxNode)
+            .walk()
+            .map(\.asRawCode)
+    }
 
     public var rawName: String { syntaxNode.syntaxName }
-
-    public var entireDeclare: String { syntaxNode.declareString }
 
     public var type: CodeContainerType { syntaxNode.type }
     
     public let syntaxNode: S
     public init(syntaxNode: S) {
         self.syntaxNode = syntaxNode
-        self.code = SwiftSyntaxWalker(syntaxNode: syntaxNode)
-            .walk()
-            .map(\.asRawCode)
+    }
+}
+
+// MAKR: --
+extension TokenSyntax: CodeRawWordProtocol {
+    public var identifier: CodeRawWordIdentifier {
+        switch tokenKind {
+        case .identifier: return .identifier
+        default: return .word
+        }
+    }
+    
+    public var content: String {
+        String(data: Data(syntaxTextBytes), encoding: .utf8)!
+    }
+}
+
+extension TokenSequence {
+    public func asArray() -> [TokenSyntax] {
+        map({ $0 })
     }
 }
 
 // MARK: --
 
 public struct CodeSyntax<S: CustomCodeSyntaxProtocol & CustomNamedDeclSyntax>: CodeProtocol where S: SyntaxProtocol {
+    public var words: [CodeRawWordProtocol] { syntaxNode.tokens(viewMode: .sourceAccurate).asArray() }
+    
     public var rawName: String { syntaxNode.syntaxName }
-
-    public var content: String { syntaxNode.body }
 
     public var type: CodeType { syntaxNode.type }
 

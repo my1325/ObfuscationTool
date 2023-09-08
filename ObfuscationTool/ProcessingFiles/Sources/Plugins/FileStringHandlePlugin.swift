@@ -133,28 +133,38 @@ open class FileStringHandlePrefix: FileStringPrefixModeHandler {
     }
     
     public func prepareWithAllCode(_ allCode: [CodeRawProtocol]) {
-        allCode.map({ $0.rawName })
+        allCode.map({ $0.rawName.trimmingCharacters(in: .whitespacesAndNewlines) })
             .filter({ !$0.isEmpty })
             .forEach(handleName)
-        print(cacheHandledString)
     }
     
     public func handleCode(_ code: CodeProtocol) -> CodeProtocol {
         let name = cacheHandledString[code.rawName] ?? code.rawName
-        let content = code.content
-            .components(separatedBy: " ")
-            .map({ cacheHandledString.reduce($0, { $0.replacingOccurrences(of: $1.key, with: $1.value) }) })
-            .joined(separator: " ")
-        return Code(type: code.type, content: content, rawName: name)
+        let words = code.words
+            .map({
+                let key = $0.content.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                if $0.identifier == .identifier, let contentNeedToReplace = cacheHandledString[key] {
+                    let newContent = $0.content.replacingOccurrences(of: key, with: contentNeedToReplace)
+                    return $0.newWord(newContent)
+                }
+                return $0
+            })
+        return Code(type: code.type, words: words, rawName: name)
     }
     
     public func handleCodeContainer(_ codeContainer: CodeContainerProtocol) -> CodeContainerProtocol {
         let name = cacheHandledString[codeContainer.rawName] ?? codeContainer.rawName
-        let declare = codeContainer.entireDeclare
-            .components(separatedBy: " ")
-            .map({ cacheHandledString.reduce($0, { $0.replacingOccurrences(of: $1.key, with: $1.value) }) })
-            .joined(separator: " ")
-        let newContainer = CodeContainer(type: codeContainer.type, entireDeclare: declare, code: codeContainer.code, rawName: name)
+        let declareWord = codeContainer.entireDeclareWord
+            .map({
+                let key = $0.content.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                if $0.identifier == .identifier, let contentNeedToReplace = cacheHandledString[key] {
+                    let newContent = $0.content.replacingOccurrences(of: key, with: contentNeedToReplace)
+                    return $0.newWord(newContent)
+                }
+                return $0
+            })
+        
+        let newContainer = CodeContainer(type: codeContainer.type, entireDeclareWord: declareWord, code: codeContainer.code, rawName: name)
         return newContainer.mapCode(supportCodeType, block: handleCode)
             .mapCodeContainer(supportCodeContainerType, block: handleCodeContainer)
             .asCodeContainer()
