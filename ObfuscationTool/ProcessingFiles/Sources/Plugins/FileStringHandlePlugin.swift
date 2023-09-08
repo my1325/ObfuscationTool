@@ -1,33 +1,38 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by mayong on 2023/9/7.
 //
 
+import CodeProtocol
 import Foundation
 import ProcessingFiles
-import CodeProtocol
 
 open class FileStringHandlePlugin: ProcessingFileHandlePlugin {
-
     public enum HandleMode {
         public enum PrefixMode {
             case add
             case replace
             case addOrReplace
         }
+
         case prefix(mode: PrefixMode, prefix: String, separator: Character)
-        case replace(newString: String, replaceString: String)
+        case replace(originString: String, replaceString: String)
         
         func handler(_ codeType: [CodeType], codeContainerType: [CodeContainerType]) -> FileStringPrefixModeHandler {
             switch self {
-            case let .prefix(mode, prefix, separator): return FileStringHandlePrefix(mode: mode,
-                                                                                     prefix: prefix,
-                                                                                     separator: separator,
-                                                                                     supportCodeType: codeType,
-                                                                                     supportCodeContainerType: codeContainerType)
-            case let .replace(newString, replaceString): fatalError()
+            case let .prefix(mode, prefix, separator):
+                return FileStringHandlePrefix(mode: mode,
+                                              prefix: prefix,
+                                              separator: separator,
+                                              supportCodeType: codeType,
+                                              supportCodeContainerType: codeContainerType)
+            case let .replace(originString, replaceString):
+                return FileStringReplace(origin: originString,
+                                         replace: replaceString,
+                                         supportCodeType: codeType,
+                                         supportCodeContainerType: codeContainerType)
             }
         }
     }
@@ -40,14 +45,14 @@ open class FileStringHandlePlugin: ProcessingFileHandlePlugin {
         self.mode = mode
         self.codeType = codeType
         self.codeContainerType = codeContainerType
-        self.handlers = mode.map({ $0.handler(codeType, codeContainerType: codeContainerType) })
+        self.handlers = mode.map { $0.handler(codeType, codeContainerType: codeContainerType) }
     }
     
     public func processingManager(_ manager: ProcessingManager, didProcessedFiles files: [ProcessingFile]) -> [ProcessingFile] {
-        let allCode = files.map({ $0.codes })
+        let allCode = files.map { $0.codes }
             .map(extactCode)
-            .flatMap({ $0 })
-            .filter({
+            .flatMap { $0 }
+            .filter {
                 if let code = $0 as? CodeProtocol, self.shouldHandleCode(code.type) {
                     return true
                 } else if let code = $0 as? CodeContainerProtocol, self.shouldHandleCodeContainer(code.type) {
@@ -55,8 +60,8 @@ open class FileStringHandlePlugin: ProcessingFileHandlePlugin {
                 } else {
                     return false
                 }
-            })
-        handlers.forEach({ $0.prepareWithAllCode(allCode) })
+            }
+        handlers.forEach { $0.prepareWithAllCode(allCode) }
         return files.map(handleFile)
     }
     
@@ -96,11 +101,11 @@ open class FileStringHandlePlugin: ProcessingFileHandlePlugin {
     }
     
     private func handleCode(_ code: CodeProtocol) -> CodeProtocol {
-        handlers.reduce(code, { $1.handleCode(code) })
+        handlers.reduce(code) { $1.handleCode(code) }
     }
     
     private func handleCodeContainer(_ code: CodeContainerProtocol) -> CodeContainerProtocol {
-        handlers.reduce(code, { $1.handleCodeContainer(code) })
+        handlers.reduce(code) { $1.handleCodeContainer(code) }
     }
 }
 
@@ -110,6 +115,55 @@ public protocol FileStringPrefixModeHandler {
     func handleCode(_ code: CodeProtocol) -> CodeProtocol
     
     func handleCodeContainer(_ codeContainer: CodeContainerProtocol) -> CodeContainerProtocol
+}
+
+open class FileStringReplace: FileStringPrefixModeHandler {
+    let origin: String
+    let replace: String
+    let supportCodeType: [CodeType]
+    let supportCodeContainerType: [CodeContainerType]
+    init(origin: String,
+         replace: String,
+         supportCodeType: [CodeType],
+         supportCodeContainerType: [CodeContainerType])
+    {
+        self.origin = origin
+        self.replace = replace
+        self.supportCodeType = supportCodeType
+        self.supportCodeContainerType = supportCodeContainerType
+    }
+    
+    public func prepareWithAllCode(_ allCode: [CodeRawProtocol]) {}
+    
+    public func handleCode(_ code: CodeProtocol) -> CodeProtocol {
+        let name = code.rawName.replacingOccurrences(of: origin, with: replace)
+        let words = code.words
+            .map {
+                if $0.identifier == .identifier {
+                    let newContent = $0.content.replacingOccurrences(of: origin, with: replace)
+                    return $0.newWord(newContent)
+                }
+                return $0
+            }
+        return Code(type: code.type, words: words, rawName: name)
+    }
+    
+    public func handleCodeContainer(_ codeContainer: CodeContainerProtocol) -> CodeContainerProtocol {
+        let name = codeContainer.rawName.replacingOccurrences(of: origin, with: replace)
+        let declareWord = codeContainer.entireDeclareWord
+            .map {
+                if $0.identifier == .identifier {
+                    let newContent = $0.content.replacingOccurrences(of: origin, with: replace)
+                    return $0.newWord(newContent)
+                }
+                return $0
+            }
+        
+        let newContainer = CodeContainer(type: codeContainer.type, entireDeclareWord: declareWord, code: codeContainer.code, rawName: name)
+        return newContainer.mapCode(supportCodeType, block: handleCode)
+            .mapCodeContainer(supportCodeContainerType, block: handleCodeContainer)
+            .asCodeContainer()
+    }
 }
 
 open class FileStringHandlePrefix: FileStringPrefixModeHandler {
@@ -133,36 +187,36 @@ open class FileStringHandlePrefix: FileStringPrefixModeHandler {
     }
     
     public func prepareWithAllCode(_ allCode: [CodeRawProtocol]) {
-        allCode.map({ $0.rawName.trimmingCharacters(in: .whitespacesAndNewlines) })
-            .filter({ !$0.isEmpty })
+        allCode.map { $0.rawName.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
             .forEach(handleName)
     }
     
     public func handleCode(_ code: CodeProtocol) -> CodeProtocol {
         let name = cacheHandledString[code.rawName] ?? code.rawName
         let words = code.words
-            .map({
+            .map {
                 let key = $0.content.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
                 if $0.identifier == .identifier, let contentNeedToReplace = cacheHandledString[key] {
                     let newContent = $0.content.replacingOccurrences(of: key, with: contentNeedToReplace)
                     return $0.newWord(newContent)
                 }
                 return $0
-            })
+            }
         return Code(type: code.type, words: words, rawName: name)
     }
     
     public func handleCodeContainer(_ codeContainer: CodeContainerProtocol) -> CodeContainerProtocol {
         let name = cacheHandledString[codeContainer.rawName] ?? codeContainer.rawName
         let declareWord = codeContainer.entireDeclareWord
-            .map({
+            .map {
                 let key = $0.content.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
                 if $0.identifier == .identifier, let contentNeedToReplace = cacheHandledString[key] {
                     let newContent = $0.content.replacingOccurrences(of: key, with: contentNeedToReplace)
                     return $0.newWord(newContent)
                 }
                 return $0
-            })
+            }
         
         let newContainer = CodeContainer(type: codeContainer.type, entireDeclareWord: declareWord, code: codeContainer.code, rawName: name)
         return newContainer.mapCode(supportCodeType, block: handleCode)
