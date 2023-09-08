@@ -9,13 +9,30 @@ import Cocoa
 import ProcessingFiles
 import SwiftFilePlugin
 import FilePath
-import SwiftString
 import Plugins
+import SnapKit
+import Combine
 
 class ViewController: NSViewController {
+    private lazy var segmentedControl: SegmentedControl = {
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.items = ["Confusion", "Crypt"]
+        self.view.addSubview($0)
+        $0.snp.makeConstraints { make in
+            make.top.leading.trailing.equalTo(0)
+            make.height.equalTo(40)
+        }
+        return $0
+    }(SegmentedControl(frame: .zero))
+    
+    var sinkStore: Set<AnyCancellable> = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        testProcessingFile()
+        
+        segmentedControl.$selectedIndex.sink(receiveValue: {
+            print($0)
+        }).store(in: &sinkStore)
     }
     
     func testProcessingFile() {
@@ -43,7 +60,5 @@ class ViewController: NSViewController {
         // Update the view, if already loaded.
         }
     }
-
-
 }
 

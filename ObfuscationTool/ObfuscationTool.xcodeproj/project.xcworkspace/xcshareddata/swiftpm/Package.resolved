@@ -2,12 +2,30 @@
   "object": {
     "pins": [
       {
+        "package": "CombineExt",
+        "repositoryURL": "https://github.com/CombineCommunity/CombineExt.git",
+        "state": {
+          "branch": null,
+          "revision": "d7b896fa9ca8b47fa7bcde6b43ef9b70bf8c1f56",
+          "version": "1.8.1"
+        }
+      },
+      {
         "package": "FilePath",
         "repositoryURL": "https://github.com/my1325/FilePath.git",
         "state": {
           "branch": "main",
           "revision": "afc91bba255ddb71cf6a45cef250952aba4ffe9f",
           "version": null
+        }
+      },
+      {
+        "package": "SnapKit",
+        "repositoryURL": "https://github.com/SnapKit/SnapKit.git",
+        "state": {
+          "branch": null,
+          "revision": "f222cbdf325885926566172f6f5f06af95473158",
+          "version": "5.6.0"
         }
       },
       {
