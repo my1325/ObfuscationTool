@@ -510,16 +510,26 @@ class ReadNode {
                 continue
             }
             var found:Bool = false
+//            let funcTargets:[String] = ["func ", "init(", "deinit"]
+            let ignoreLine = currentLine.ignoreEmpty()
+            if currentLine.contains("func ") {
+                found = true
+            }
             
-            for funcStr in funcTargets {
-                if currentLine.contains(funcStr) {
+            if !found {
+                if currentLine.contains("init(") {
                     let ignoreLine = currentLine.ignoreEmpty()
-                    if !(ignoreLine.hasPrefix("super.") || ignoreLine.hasPrefix("self.")) {
+                    if !(ignoreLine.hasPrefix("super.") || ignoreLine.hasPrefix("self.") || ignoreLine.contains(".init(")) {
                         found = true
-                        break
                     }
                 }
             }
+            if !found {
+                if ignoreLine.hasPrefix("deinit") {
+                    found = true
+                }
+            }
+            
             
             if found {
                 let (subfuncStr, lineCount) = getBlockCode(lineStr: currentLine, lines: functionLineItems, superType: nodeType, currentType: .funcType)
@@ -676,7 +686,7 @@ class ReadNode {
         var isDir:ObjCBool = true
         _ = FileManager.default.fileExists(atPath: rootDirectorPath, isDirectory: &isDir)
         let judgeFile:((String?) -> Bool) = { str in
-//            return str == "h" || str == "m" || str == "c"
+//            return str == "h" || str == "m" || str == "c" || str == "mm"
             return str == "swift"
         }
         
@@ -929,7 +939,7 @@ class ReadNode {
         for filePathStr in filePathStrs {
             deletNote(filePathStr: filePathStr)
         }
-        
+
         var fileNodes:[FileNode] = []
         for filePathStr in filePathStrs {
             fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
