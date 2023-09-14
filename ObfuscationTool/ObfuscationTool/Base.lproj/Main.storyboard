@@ -774,8 +774,8 @@
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="N4o-2H-xnU">
-                                <rect key="frame" x="203" y="222" width="74" height="32"/>
-                                <buttonCell key="cell" type="push" title="换顺序" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="HQV-9V-0t4">
+                                <rect key="frame" x="171" y="222" width="139" height="32"/>
+                                <buttonCell key="cell" type="push" title="换顺序+垃圾代码" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="HQV-9V-0t4">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>

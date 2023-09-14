@@ -15,10 +15,10 @@ class ViewController: NSViewController {
     @IBOutlet weak var preStrTextFiled: NSTextField!
     override func viewDidLoad() {
         super.viewDidLoad()
-        (self.filePathTextFiled.documentView as? NSTextView)?.string = ""
-        let files = NSSearchPathForDirectoriesInDomains(.downloadsDirectory, .userDomainMask, true)[0].appending("/MOXiiWhitePointerService.swift")
-        let nodes = ReadNode.getNodes(filePath: files)
-        
+//        (self.filePathTextFiled.documentView as? NSTextView)?.string = ""
+//        let files = NSSearchPathForDirectoriesInDomains(.downloadsDirectory, .userDomainMask, true)[0].appending("/MOXiiWhitePointerService.swift")
+//        let nodes = ReadNode.getNodes(filePath: files)
+        RubbishService.shared.loadData()
         debugPrint("")
     }
     @IBAction func clickReplaceClass(_ sender: Any) {

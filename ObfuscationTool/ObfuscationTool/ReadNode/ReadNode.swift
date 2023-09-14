@@ -293,7 +293,7 @@ class ReadNode {
         return (codeStr, count)
     }
     
-    private class func getClassNodeStr(extStrs:[String], classarm:String, classContent: String) -> ClassNode {
+    class func getClassNodeStr(extStrs:[String], classarm:String, classContent: String) -> ClassNode {
         let dealWithResult = classContent.fileterEndCode()
         var classLineItems:[String] = dealWithResult.components(separatedBy: "\n")
         let firsLine = getClassName(lines: classLineItems)
@@ -387,7 +387,7 @@ class ReadNode {
         return ExtensionNode(extStrs: extStrs, code: classContent, classFirstLine: firstLineStr, blockEndStr: endStr, subFunctionNodes: subFunctionNodes, subClass: subClassNodes, blockCode: partCode.3)
     }
     
-    private class func getFunction(extStrs:[String], functionStr:String) -> FunctionNode {
+    class func getFunction(extStrs:[String], functionStr:String) -> FunctionNode {
         let dealWithResult = functionStr.fileterEndCode()
         if dealWithResult.count > 0 {
             var functionLineItems:[String] = dealWithResult.components(separatedBy: "\n")
@@ -637,7 +637,7 @@ class ReadNode {
         return (found, line)
     }
     
-    private class func getFileNode(filePathStr:String) -> FileNode {
+    class func getFileNode(filePathStr:String) -> FileNode {
 //        let filePath = FilePath.file(file: filePathStr)
 //        var fileLineItems = (try? filePath.readLines()) ?? []
 //        var currentLines:[String] = []
@@ -931,7 +931,8 @@ class ReadNode {
         }
         CacheData.shared.data.removeAll()
     }
-    //更改位置
+    
+    //更改位置+垃圾代码
     public class func exchageLineFileNodes(filePathStrs:[String]) {
         for filePathStr in filePathStrs {
             replaceCustomStr(filePathStr: filePathStr)
@@ -946,7 +947,7 @@ class ReadNode {
         }
 
         for fileNode in fileNodes {
-            let newCode:String = fileNode.getString()
+            let newCode:String = fileNode.getString(addRubbish: true)
             let filePath = FilePath.file(file: fileNode.filePath)
             if let data = newCode.data(using: .utf8) {
                 try? filePath.writeData(data)

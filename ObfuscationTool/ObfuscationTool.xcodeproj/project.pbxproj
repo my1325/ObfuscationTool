@@ -12,6 +12,9 @@
 		5A2179742AA5A90B00C2F621 /* ReadNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A2179722AA5A90B00C2F621 /* ReadNode.swift */; };
 		5A2179772AA5AC4C00C2F621 /* FileIterator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A2179752AA5AC4C00C2F621 /* FileIterator.swift */; };
 		5A2179782AA5AC4C00C2F621 /* FilePath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A2179762AA5AC4C00C2F621 /* FilePath.swift */; };
+		5A92BF322AB15A250018766E /* RubbishService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A92BF312AB15A250018766E /* RubbishService.swift */; };
+		5A92BFC72AB19B100018766E /* Rubbish.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5A92BFC62AB19B100018766E /* Rubbish.txt */; };
+		5AC1C9102AB152FE004E4015 /* RubbishCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AC1C90F2AB152FE004E4015 /* RubbishCode.swift */; };
 		B7587B4F2A8F6CD600C78D4D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7587B4E2A8F6CD600C78D4D /* AppDelegate.swift */; };
 		B7587B512A8F6CD600C78D4D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7587B502A8F6CD600C78D4D /* ViewController.swift */; };
 		B7587B532A8F6CD700C78D4D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B7587B522A8F6CD700C78D4D /* Assets.xcassets */; };
@@ -27,6 +30,9 @@
 		5A2179722AA5A90B00C2F621 /* ReadNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadNode.swift; sourceTree = "<group>"; };
 		5A2179752AA5AC4C00C2F621 /* FileIterator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileIterator.swift; sourceTree = "<group>"; };
 		5A2179762AA5AC4C00C2F621 /* FilePath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilePath.swift; sourceTree = "<group>"; };
+		5A92BF312AB15A250018766E /* RubbishService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RubbishService.swift; sourceTree = "<group>"; };
+		5A92BFC62AB19B100018766E /* Rubbish.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Rubbish.txt; sourceTree = "<group>"; };
+		5AC1C90F2AB152FE004E4015 /* RubbishCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RubbishCode.swift; sourceTree = "<group>"; };
 		B7587B4B2A8F6CD600C78D4D /* ObfuscationTool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObfuscationTool.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7587B4E2A8F6CD600C78D4D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B7587B502A8F6CD600C78D4D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -68,6 +74,9 @@
 		5A2179702AA5A8D700C2F621 /* ReadNode */ = {
 			isa = PBXGroup;
 			children = (
+				5A92BFC62AB19B100018766E /* Rubbish.txt */,
+				5AC1C90F2AB152FE004E4015 /* RubbishCode.swift */,
+				5A92BF312AB15A250018766E /* RubbishService.swift */,
 				5A2179752AA5AC4C00C2F621 /* FileIterator.swift */,
 				5A2179762AA5AC4C00C2F621 /* FilePath.swift */,
 				5A2179712AA5A90B00C2F621 /* CodeNode.swift */,
@@ -174,6 +183,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A92BFC72AB19B100018766E /* Rubbish.txt in Resources */,
 				B7587B532A8F6CD700C78D4D /* Assets.xcassets in Resources */,
 				B7587B562A8F6CD700C78D4D /* Main.storyboard in Resources */,
 			);
@@ -190,8 +200,10 @@
 				5A2179772AA5AC4C00C2F621 /* FileIterator.swift in Sources */,
 				5A2179782AA5AC4C00C2F621 /* FilePath.swift in Sources */,
 				B7587B512A8F6CD600C78D4D /* ViewController.swift in Sources */,
+				5AC1C9102AB152FE004E4015 /* RubbishCode.swift in Sources */,
 				B7587B4F2A8F6CD600C78D4D /* AppDelegate.swift in Sources */,
 				5A2179732AA5A90B00C2F621 /* CodeNode.swift in Sources */,
+				5A92BF322AB15A250018766E /* RubbishService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -328,12 +340,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ObfuscationTool/ObfuscationTool.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -359,12 +371,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ObfuscationTool/ObfuscationTool.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";

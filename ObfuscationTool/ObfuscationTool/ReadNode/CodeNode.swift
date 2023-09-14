@@ -17,11 +17,11 @@ enum NodeType {
     case fileType
 }
 protocol BaseNodeProtocol {
-     func getString() -> String
+    func getString(addRubbish:Bool) -> String
     var nodeType:NodeType {get}
 }
 extension BaseNodeProtocol {
-     func getString() -> String {
+     func getString(addRubbish:Bool) -> String {
         return ""
     }
     var nodeType: NodeType {
@@ -30,7 +30,7 @@ extension BaseNodeProtocol {
 }
 
 class BaseNode:BaseNodeProtocol {
-     func getString() -> String {
+     func getString(addRubbish:Bool) -> String {
         return ""
     }
     lazy var replaceStr:String = {
@@ -39,21 +39,28 @@ class BaseNode:BaseNodeProtocol {
 }
 
 extension Array:BaseNodeProtocol where Element:BaseNodeProtocol {
-    func getString() -> String {
+    func getString(addRubbish:Bool) -> String {
         var str:String = ""
         var allNode:[Element] = self
         while allNode.count > 0 {
             let index = Int(arc4random()) % allNode.count
-            str.append(allNode[index].getString())
+            str.append(allNode[index].getString(addRubbish:addRubbish))
 //            str.append("\n")
             allNode.remove(at: index)
         }
         return str
     }
+    
+    func getRandomIndex() -> Int {
+        if self.count > 0 {
+            return Int(arc4random()) % self.count
+        }
+        return 0
+    }
 }
 
 class FunctionBlockNode: BaseNode {
-    override func getString() -> String {
+    override func getString(addRubbish:Bool) -> String {
         var str:String = ""
         str.append(extStrs.joined())
         if str.ignoreEmpty().count > 0 {
@@ -93,7 +100,7 @@ func getRandomStr() -> String {
 
 //属性
 class ArgumentNode:BaseNode {
-     override func getString() -> String {
+     override func getString(addRubbish:Bool) -> String {
         var str:String = ""
         str.append(extStrs.joined())
          if str.ignoreEmpty().count > 0 {
@@ -122,7 +129,7 @@ class ArgumentNode:BaseNode {
 
 //方法 内部方法可以打乱,其他顺序不能乱
 class FunctionNode:BaseNode {
-     override func getString() -> String {
+     override func getString(addRubbish:Bool) -> String {
         var str:String = ""
         str.append(extStrs.joined())
          if str.ignoreEmpty().count > 0 {
@@ -130,11 +137,11 @@ class FunctionNode:BaseNode {
          }
         str.append(functionFirstLine)
         str.append("\n")
-        str.append(blockCode.map({$0.getString()}).joined())
+        str.append(blockCode.map({$0.getString(addRubbish:addRubbish)}).joined())
         var allNode:[BaseNode] = []
         allNode.append(contentsOf: subFunctionNodes)
         allNode.append(contentsOf: subClasss)
-        str.append(allNode.getString())
+        str.append(allNode.getString(addRubbish:addRubbish))
         str.append(blockEndStr)
         str.append("\n")
         return str
@@ -189,7 +196,7 @@ class ClassNode:BaseNode {
         return .classType
     }
     // struct不能换位置
-     override func getString() -> String {
+     override func getString(addRubbish:Bool) -> String {
         var str:String = ""
         str.append(extStrs.joined())
          if str.ignoreEmpty().count > 0 {
@@ -199,16 +206,20 @@ class ClassNode:BaseNode {
         str.append("\n")
         var allNode:[BaseNode] = []
         if self.type.contains("struct") {
-            str.append(blockCode.map({$0.getString()}).joined())
+            str.append(blockCode.map({$0.getString(addRubbish:addRubbish)}).joined())
         } else {
             allNode.append(contentsOf: blockCode)
         }
-        
-        allNode.append(contentsOf: subFunctionNodes)
+         
+         var functionNodes = self.subFunctionNodes
+         if addRubbish, let node = RubbishService.shared.getRandomFuncCode() {
+             functionNodes.insert(node, at: functionNodes.getRandomIndex())
+         }
+        allNode.append(contentsOf: functionNodes)
         allNode.append(contentsOf: subClass)
         
         allNode.append(contentsOf: argmentsName)
-        str.append(allNode.getString())
+        str.append(allNode.getString(addRubbish:addRubbish))
         str.append(blockEndStr)
         str.append("\n")
         return str
@@ -250,7 +261,7 @@ class ExtensionNode:BaseNode {
     var nodeType: NodeType {
         return .protocolType
     }
-     override func getString() -> String {
+     override func getString(addRubbish:Bool) -> String {
         var str:String = ""
         str.append(extStrs.joined())
          if str.ignoreEmpty().count > 0 {
@@ -259,10 +270,14 @@ class ExtensionNode:BaseNode {
         str.append(classFirstLine)
         str.append("\n")
         var allNode:[BaseNode] = []
-        allNode.append(contentsOf: subFunctionNodes)
+        var functionNodes = self.subFunctionNodes
+        if addRubbish, let node = RubbishService.shared.getRandomFuncCode() {
+            functionNodes.insert(node, at: functionNodes.getRandomIndex())
+        }
+        allNode.append(contentsOf: functionNodes)
         allNode.append(contentsOf: subClass)
         allNode.append(contentsOf: blockCode)
-        str.append(allNode.getString())
+        str.append(allNode.getString(addRubbish:addRubbish))
         str.append(blockEndStr)
         str.append("\n")
         return str
@@ -296,15 +311,19 @@ class FileNode:BaseNode {
     var nodeType: NodeType {
         return .fileType
     }
-     override func getString() -> String {
+     override func getString(addRubbish:Bool) -> String {
         var str:String = ""
         var allNode:[BaseNode] = []
+         var subClassNodes = self.classNodes
+         if addRubbish, let node = RubbishService.shared.getRandmClassCode() {
+             subClassNodes.insert(node, at: subClassNodes.getRandomIndex())
+         }
         allNode.append(contentsOf: subBlock)
         allNode.append(contentsOf: funcNodes)
-        allNode.append(contentsOf: classNodes)
+        allNode.append(contentsOf: subClassNodes)
         allNode.append(contentsOf: arguments)
         allNode.append(contentsOf: extensionNodes)
-        str.append(allNode.getString())
+        str.append(allNode.getString(addRubbish:addRubbish))
         return str
     }
     var filePath:String
