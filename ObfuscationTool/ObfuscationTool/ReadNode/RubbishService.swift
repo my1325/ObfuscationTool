@@ -24,7 +24,8 @@ class RubbishService: NSObject {
             let randomIndex:Int = Int(arc4random()) % functionNodes.count
             let node = functionNodes[randomIndex]
             let name = getRandomStr()
-            let replaceCode = node.code.replacingOccurrences(of: "result", with: name).replacingOccurrences(of: node.functionName, with: node.replaceStr)
+            let functionName = getRandomStr()
+            let replaceCode = node.code.replacingOccurrences(of: "result", with: name).replacingOccurrences(of: node.functionName, with: functionName)
             
             return ReadNode.getFunction(extStrs: node.extStrs, functionStr: replaceCode)
         }
@@ -35,7 +36,8 @@ class RubbishService: NSObject {
         if let functionNodes = self.fileNode?.classNodes, functionNodes.count > 0 {
             let randomIndex:Int = Int(arc4random()) % functionNodes.count
             let node = functionNodes[randomIndex]
-            let replaceCode = node.code.replacingOccurrences(of: node.className, with: node.replaceStr)
+            let className = getRandomStr()
+            let replaceCode = node.code.replacingOccurrences(of: node.className, with: className)
             
             return ReadNode.getClassNodeStr(extStrs: node.extStrs, classarm: node.type, classContent: replaceCode)
         }

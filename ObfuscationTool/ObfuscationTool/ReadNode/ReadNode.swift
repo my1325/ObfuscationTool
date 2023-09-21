@@ -703,8 +703,9 @@ class ReadNode {
         for fileName in array {
             var isDir:ObjCBool = true
             let filePath:String = "\(rootDirectorPath)/\(fileName)"
-            if FileManager.default.fileExists(atPath: filePath, isDirectory: &isDir), let fileUrl = URL(string: filePath) {
+            if FileManager.default.fileExists(atPath: filePath, isDirectory: &isDir) {
                 if !isDir.boolValue {
+                    let fileUrl = URL(fileURLWithPath: filePath)
                     if judgeFile(fileUrl.pathExtension) {
                         filePaths.append(filePath)
                     }

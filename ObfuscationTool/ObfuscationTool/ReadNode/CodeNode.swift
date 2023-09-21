@@ -21,7 +21,7 @@ protocol BaseNodeProtocol {
     var nodeType:NodeType {get}
 }
 extension BaseNodeProtocol {
-     func getString(addRubbish:Bool) -> String {
+    func getString(addRubbish:Bool) -> String {
         return ""
     }
     var nodeType: NodeType {
@@ -212,7 +212,7 @@ class ClassNode:BaseNode {
         }
          
          var functionNodes = self.subFunctionNodes
-         if addRubbish, let node = RubbishService.shared.getRandomFuncCode() {
+         if addRubbish, "protocol" != self.type.ignoreEmpty(), let node = RubbishService.shared.getRandomFuncCode() {
              functionNodes.insert(node, at: functionNodes.getRandomIndex())
          }
         allNode.append(contentsOf: functionNodes)
