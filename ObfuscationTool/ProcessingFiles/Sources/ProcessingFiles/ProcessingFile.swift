@@ -71,4 +71,10 @@ public final class ProcessingFile {
         file.setCodes(newCode)
         return file
     }
+    
+    public func writeToFile(_ encoding: String.Encoding = .utf8) throws {
+        if let data = try getContent().data(using: encoding) {
+            try filePath.writeData(data)
+        }
+    }
 }

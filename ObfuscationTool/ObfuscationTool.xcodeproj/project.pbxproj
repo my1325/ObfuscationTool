@@ -12,13 +12,35 @@
 		B7587B512A8F6CD600C78D4D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7587B502A8F6CD600C78D4D /* ViewController.swift */; };
 		B7587B532A8F6CD700C78D4D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B7587B522A8F6CD700C78D4D /* Assets.xcassets */; };
 		B7587B562A8F6CD700C78D4D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B7587B542A8F6CD700C78D4D /* Main.storyboard */; };
-		B7D43F9F2AAACD67007713F0 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = B7D43F9E2AAACD67007713F0 /* SnapKit */; };
-		B7D43FA52AAACF40007713F0 /* CombineExt in Frameworks */ = {isa = PBXBuildFile; productRef = B7D43FA42AAACF40007713F0 /* CombineExt */; };
+		B77B6CFB2AC2821F00F172F3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B77B6CFA2AC2821F00F172F3 /* main.swift */; };
+		B77B6D092AC2894800F172F3 /* ProcessingFiles in Frameworks */ = {isa = PBXBuildFile; productRef = B77B6D082AC2894800F172F3 /* ProcessingFiles */; };
+		B77B6D122AC28C6500F172F3 /* YAMLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B77B6D112AC28C6500F172F3 /* YAMLHandler.swift */; };
+		B77B6D162AC2A7B800F172F3 /* ObfuscationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B77B6D152AC2A7B800F172F3 /* ObfuscationConfig.swift */; };
+		B7D3D0272AC3CBC000B88A9B /* TemplateType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D3D0262AC3CBC000B88A9B /* TemplateType.swift */; };
+		B7D3D0292AC3CBCC00B88A9B /* ObfuscationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D3D0282AC3CBCC00B88A9B /* ObfuscationError.swift */; };
+		B7D3D02B2AC3D9C200B88A9B /* Obfuscation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D3D02A2AC3D9C200B88A9B /* Obfuscation.swift */; };
+		B7D3D0312AC3F4A400B88A9B /* FilePath in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0302AC3F4A400B88A9B /* FilePath */; };
+		B7D3D03D2AC3F54500B88A9B /* Commander in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D03C2AC3F54500B88A9B /* Commander */; };
+		B7D3D0402AC3F56400B88A9B /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D03F2AC3F56400B88A9B /* Yams */; };
+		B7D3D0432AC3F59E00B88A9B /* SwiftGit2 in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0422AC3F59E00B88A9B /* SwiftGit2 */; };
+		B7D3D0452AC3F5AC00B88A9B /* FilePath in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0442AC3F5AC00B88A9B /* FilePath */; };
+		B7D3D0472AC3F5AC00B88A9B /* Commander in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0462AC3F5AC00B88A9B /* Commander */; };
+		B7D3D0492AC3F5AD00B88A9B /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0482AC3F5AD00B88A9B /* Yams */; };
+		B7D3D04B2AC3F5AD00B88A9B /* SwiftGit2 in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D04A2AC3F5AD00B88A9B /* SwiftGit2 */; };
 		B7D43FAB2AAAE2DC007713F0 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D43FAA2AAAE2DC007713F0 /* SegmentedControl.swift */; };
-		B7EC29E22A9F46510094D97D /* SwiftOperators in Frameworks */ = {isa = PBXBuildFile; productRef = B7EC29E12A9F46510094D97D /* SwiftOperators */; };
-		B7EC29E42A9F46510094D97D /* SwiftParser in Frameworks */ = {isa = PBXBuildFile; productRef = B7EC29E32A9F46510094D97D /* SwiftParser */; };
-		B7EC29E62A9F46510094D97D /* SwiftSyntax in Frameworks */ = {isa = PBXBuildFile; productRef = B7EC29E52A9F46510094D97D /* SwiftSyntax */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B77B6CF62AC2821F00F172F3 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0FF5F7792AA39DDA001B432B /* ProcessingFiles */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ProcessingFiles; sourceTree = "<group>"; };
@@ -28,6 +50,14 @@
 		B7587B522A8F6CD700C78D4D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B7587B552A8F6CD700C78D4D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B7587B572A8F6CD700C78D4D /* ObfuscationTool.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ObfuscationTool.entitlements; sourceTree = "<group>"; };
+		B77B6CF82AC2821F00F172F3 /* Command */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Command; sourceTree = BUILT_PRODUCTS_DIR; };
+		B77B6CFA2AC2821F00F172F3 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		B77B6D112AC28C6500F172F3 /* YAMLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YAMLHandler.swift; sourceTree = "<group>"; };
+		B77B6D142AC2A0B800F172F3 /* obfuscation.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = obfuscation.yml; sourceTree = "<group>"; };
+		B77B6D152AC2A7B800F172F3 /* ObfuscationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObfuscationConfig.swift; sourceTree = "<group>"; };
+		B7D3D0262AC3CBC000B88A9B /* TemplateType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateType.swift; sourceTree = "<group>"; };
+		B7D3D0282AC3CBCC00B88A9B /* ObfuscationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObfuscationError.swift; sourceTree = "<group>"; };
+		B7D3D02A2AC3D9C200B88A9B /* Obfuscation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Obfuscation.swift; sourceTree = "<group>"; };
 		B7D43FAA2AAAE2DC007713F0 /* SegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedControl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -36,12 +66,23 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B7EC29E22A9F46510094D97D /* SwiftOperators in Frameworks */,
-				B7EC29E42A9F46510094D97D /* SwiftParser in Frameworks */,
-				B7EC29E62A9F46510094D97D /* SwiftSyntax in Frameworks */,
-				B7D43FA52AAACF40007713F0 /* CombineExt in Frameworks */,
 				0FF5F77C2AA39E94001B432B /* ProcessingFiles in Frameworks */,
-				B7D43F9F2AAACD67007713F0 /* SnapKit in Frameworks */,
+				B7D3D03D2AC3F54500B88A9B /* Commander in Frameworks */,
+				B7D3D0432AC3F59E00B88A9B /* SwiftGit2 in Frameworks */,
+				B7D3D0402AC3F56400B88A9B /* Yams in Frameworks */,
+				B7D3D0312AC3F4A400B88A9B /* FilePath in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B77B6CF52AC2821F00F172F3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B77B6D092AC2894800F172F3 /* ProcessingFiles in Frameworks */,
+				B7D3D0472AC3F5AC00B88A9B /* Commander in Frameworks */,
+				B7D3D04B2AC3F5AD00B88A9B /* SwiftGit2 in Frameworks */,
+				B7D3D0492AC3F5AD00B88A9B /* Yams in Frameworks */,
+				B7D3D0452AC3F5AC00B88A9B /* FilePath in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -68,6 +109,7 @@
 			children = (
 				0FF5F7782AA39DDA001B432B /* Packages */,
 				B7587B4D2A8F6CD600C78D4D /* ObfuscationTool */,
+				B77B6CF92AC2821F00F172F3 /* Command */,
 				B7587B4C2A8F6CD600C78D4D /* Products */,
 				0FF5F77A2AA39E94001B432B /* Frameworks */,
 			);
@@ -77,6 +119,7 @@
 			isa = PBXGroup;
 			children = (
 				B7587B4B2A8F6CD600C78D4D /* ObfuscationTool.app */,
+				B77B6CF82AC2821F00F172F3 /* Command */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -92,6 +135,36 @@
 				B7587B572A8F6CD700C78D4D /* ObfuscationTool.entitlements */,
 			);
 			path = ObfuscationTool;
+			sourceTree = "<group>";
+		};
+		B77B6CF92AC2821F00F172F3 /* Command */ = {
+			isa = PBXGroup;
+			children = (
+				B77B6D132AC2A07200F172F3 /* templates */,
+				B77B6D102AC28C4B00F172F3 /* Obfuscation */,
+				B77B6CFA2AC2821F00F172F3 /* main.swift */,
+			);
+			path = Command;
+			sourceTree = "<group>";
+		};
+		B77B6D102AC28C4B00F172F3 /* Obfuscation */ = {
+			isa = PBXGroup;
+			children = (
+				B77B6D112AC28C6500F172F3 /* YAMLHandler.swift */,
+				B77B6D152AC2A7B800F172F3 /* ObfuscationConfig.swift */,
+				B7D3D0262AC3CBC000B88A9B /* TemplateType.swift */,
+				B7D3D0282AC3CBCC00B88A9B /* ObfuscationError.swift */,
+				B7D3D02A2AC3D9C200B88A9B /* Obfuscation.swift */,
+			);
+			path = Obfuscation;
+			sourceTree = "<group>";
+		};
+		B77B6D132AC2A07200F172F3 /* templates */ = {
+			isa = PBXGroup;
+			children = (
+				B77B6D142AC2A0B800F172F3 /* obfuscation.yml */,
+			);
+			path = templates;
 			sourceTree = "<group>";
 		};
 		B7D43FA92AAAE2C2007713F0 /* Custom */ = {
@@ -119,16 +192,39 @@
 			);
 			name = ObfuscationTool;
 			packageProductDependencies = (
-				B7EC29E12A9F46510094D97D /* SwiftOperators */,
-				B7EC29E32A9F46510094D97D /* SwiftParser */,
-				B7EC29E52A9F46510094D97D /* SwiftSyntax */,
 				0FF5F77B2AA39E94001B432B /* ProcessingFiles */,
-				B7D43F9E2AAACD67007713F0 /* SnapKit */,
-				B7D43FA42AAACF40007713F0 /* CombineExt */,
+				B7D3D0302AC3F4A400B88A9B /* FilePath */,
+				B7D3D03C2AC3F54500B88A9B /* Commander */,
+				B7D3D03F2AC3F56400B88A9B /* Yams */,
+				B7D3D0422AC3F59E00B88A9B /* SwiftGit2 */,
 			);
 			productName = ObfuscationTool;
 			productReference = B7587B4B2A8F6CD600C78D4D /* ObfuscationTool.app */;
 			productType = "com.apple.product-type.application";
+		};
+		B77B6CF72AC2821F00F172F3 /* Command */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B77B6CFE2AC2821F00F172F3 /* Build configuration list for PBXNativeTarget "Command" */;
+			buildPhases = (
+				B77B6CF42AC2821F00F172F3 /* Sources */,
+				B77B6CF52AC2821F00F172F3 /* Frameworks */,
+				B77B6CF62AC2821F00F172F3 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Command;
+			packageProductDependencies = (
+				B77B6D082AC2894800F172F3 /* ProcessingFiles */,
+				B7D3D0442AC3F5AC00B88A9B /* FilePath */,
+				B7D3D0462AC3F5AC00B88A9B /* Commander */,
+				B7D3D0482AC3F5AD00B88A9B /* Yams */,
+				B7D3D04A2AC3F5AD00B88A9B /* SwiftGit2 */,
+			);
+			productName = Commond;
+			productReference = B77B6CF82AC2821F00F172F3 /* Command */;
+			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
@@ -137,11 +233,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1430;
+				LastSwiftUpdateCheck = 1410;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					B7587B4A2A8F6CD600C78D4D = {
 						CreatedOnToolsVersion = 14.3;
+					};
+					B77B6CF72AC2821F00F172F3 = {
+						CreatedOnToolsVersion = 14.1;
 					};
 				};
 			};
@@ -155,15 +254,17 @@
 			);
 			mainGroup = B7587B422A8F6CD600C78D4D;
 			packageReferences = (
-				B7EC29E02A9F46510094D97D /* XCRemoteSwiftPackageReference "swift-syntax" */,
-				B7D43F9D2AAACD67007713F0 /* XCRemoteSwiftPackageReference "SnapKit" */,
-				B7D43FA32AAACF3F007713F0 /* XCRemoteSwiftPackageReference "CombineExt" */,
+				B7D3D02F2AC3F4A400B88A9B /* XCRemoteSwiftPackageReference "FilePath" */,
+				B7D3D03B2AC3F54500B88A9B /* XCRemoteSwiftPackageReference "Commander" */,
+				B7D3D03E2AC3F56400B88A9B /* XCRemoteSwiftPackageReference "Yams" */,
+				B7D3D0412AC3F59E00B88A9B /* XCRemoteSwiftPackageReference "SwiftGit2" */,
 			);
 			productRefGroup = B7587B4C2A8F6CD600C78D4D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				B7587B4A2A8F6CD600C78D4D /* ObfuscationTool */,
+				B77B6CF72AC2821F00F172F3 /* Command */,
 			);
 		};
 /* End PBXProject section */
@@ -188,6 +289,19 @@
 				B7587B512A8F6CD600C78D4D /* ViewController.swift in Sources */,
 				B7587B4F2A8F6CD600C78D4D /* AppDelegate.swift in Sources */,
 				B7D43FAB2AAAE2DC007713F0 /* SegmentedControl.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B77B6CF42AC2821F00F172F3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B77B6CFB2AC2821F00F172F3 /* main.swift in Sources */,
+				B7D3D02B2AC3D9C200B88A9B /* Obfuscation.swift in Sources */,
+				B77B6D122AC28C6500F172F3 /* YAMLHandler.swift in Sources */,
+				B7D3D0292AC3CBCC00B88A9B /* ObfuscationError.swift in Sources */,
+				B77B6D162AC2A7B800F172F3 /* ObfuscationConfig.swift in Sources */,
+				B7D3D0272AC3CBC000B88A9B /* TemplateType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -380,6 +494,34 @@
 			};
 			name = Release;
 		};
+		B77B6CFC2AC2821F00F172F3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B77B6CFD2AC2821F00F172F3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -401,30 +543,47 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B77B6CFE2AC2821F00F172F3 /* Build configuration list for PBXNativeTarget "Command" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B77B6CFC2AC2821F00F172F3 /* Debug */,
+				B77B6CFD2AC2821F00F172F3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		B7D43F9D2AAACD67007713F0 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+		B7D3D02F2AC3F4A400B88A9B /* XCRemoteSwiftPackageReference "FilePath" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			repositoryURL = "https://github.com/my1325/FilePath.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		B7D3D03B2AC3F54500B88A9B /* XCRemoteSwiftPackageReference "Commander" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kylef/Commander.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.2;
+			};
+		};
+		B7D3D03E2AC3F56400B88A9B /* XCRemoteSwiftPackageReference "Yams" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jpsim/Yams.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 5.0.0;
 			};
 		};
-		B7D43FA32AAACF3F007713F0 /* XCRemoteSwiftPackageReference "CombineExt" */ = {
+		B7D3D0412AC3F59E00B88A9B /* XCRemoteSwiftPackageReference "SwiftGit2" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/CombineCommunity/CombineExt.git";
+			repositoryURL = "https://github.com/light-tech/SwiftGit2.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-		B7EC29E02A9F46510094D97D /* XCRemoteSwiftPackageReference "swift-syntax" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-syntax.git";
-			requirement = {
-				branch = main;
+				branch = spm;
 				kind = branch;
 			};
 		};
@@ -435,30 +594,49 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ProcessingFiles;
 		};
-		B7D43F9E2AAACD67007713F0 /* SnapKit */ = {
+		B77B6D082AC2894800F172F3 /* ProcessingFiles */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B7D43F9D2AAACD67007713F0 /* XCRemoteSwiftPackageReference "SnapKit" */;
-			productName = SnapKit;
+			productName = ProcessingFiles;
 		};
-		B7D43FA42AAACF40007713F0 /* CombineExt */ = {
+		B7D3D0302AC3F4A400B88A9B /* FilePath */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B7D43FA32AAACF3F007713F0 /* XCRemoteSwiftPackageReference "CombineExt" */;
-			productName = CombineExt;
+			package = B7D3D02F2AC3F4A400B88A9B /* XCRemoteSwiftPackageReference "FilePath" */;
+			productName = FilePath;
 		};
-		B7EC29E12A9F46510094D97D /* SwiftOperators */ = {
+		B7D3D03C2AC3F54500B88A9B /* Commander */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B7EC29E02A9F46510094D97D /* XCRemoteSwiftPackageReference "swift-syntax" */;
-			productName = SwiftOperators;
+			package = B7D3D03B2AC3F54500B88A9B /* XCRemoteSwiftPackageReference "Commander" */;
+			productName = Commander;
 		};
-		B7EC29E32A9F46510094D97D /* SwiftParser */ = {
+		B7D3D03F2AC3F56400B88A9B /* Yams */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B7EC29E02A9F46510094D97D /* XCRemoteSwiftPackageReference "swift-syntax" */;
-			productName = SwiftParser;
+			package = B7D3D03E2AC3F56400B88A9B /* XCRemoteSwiftPackageReference "Yams" */;
+			productName = Yams;
 		};
-		B7EC29E52A9F46510094D97D /* SwiftSyntax */ = {
+		B7D3D0422AC3F59E00B88A9B /* SwiftGit2 */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B7EC29E02A9F46510094D97D /* XCRemoteSwiftPackageReference "swift-syntax" */;
-			productName = SwiftSyntax;
+			package = B7D3D0412AC3F59E00B88A9B /* XCRemoteSwiftPackageReference "SwiftGit2" */;
+			productName = SwiftGit2;
+		};
+		B7D3D0442AC3F5AC00B88A9B /* FilePath */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7D3D02F2AC3F4A400B88A9B /* XCRemoteSwiftPackageReference "FilePath" */;
+			productName = FilePath;
+		};
+		B7D3D0462AC3F5AC00B88A9B /* Commander */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7D3D03B2AC3F54500B88A9B /* XCRemoteSwiftPackageReference "Commander" */;
+			productName = Commander;
+		};
+		B7D3D0482AC3F5AD00B88A9B /* Yams */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7D3D03E2AC3F56400B88A9B /* XCRemoteSwiftPackageReference "Yams" */;
+			productName = Yams;
+		};
+		B7D3D04A2AC3F5AD00B88A9B /* SwiftGit2 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B7D3D0412AC3F59E00B88A9B /* XCRemoteSwiftPackageReference "SwiftGit2" */;
+			productName = SwiftGit2;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

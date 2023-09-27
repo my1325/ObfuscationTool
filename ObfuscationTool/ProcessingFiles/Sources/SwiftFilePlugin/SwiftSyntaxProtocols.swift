@@ -116,6 +116,7 @@ extension EnumCaseDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
 extension InitializerDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
 extension DeinitializerDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
 extension SubscriptDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
+extension AssociatedTypeDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
 
 extension ClassDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
 extension StructDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
@@ -221,6 +222,8 @@ extension SyntaxProtocol {
         } else if let node = self as? DeinitializerDeclSyntax {
             return CodeSyntax(syntaxNode: node)
         } else if let node = self as? SubscriptDeclSyntax {
+            return CodeSyntax(syntaxNode: node)
+        } else if let node = self as? AssociatedTypeDeclSyntax {
             return CodeSyntax(syntaxNode: node)
         } else {
             fatalError("unknown type \(self)")

@@ -24,6 +24,7 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
         case macro
         case variable
         case enumCase
+        case `associatedtype`
     }
     
     public let supportSyntaxDecls: [SupportSyntaxDecl]
@@ -110,5 +111,9 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
     
     public override func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
         appnedNode(node, supportType: .subscript)
+    }
+    
+    public override func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
+        appnedNode(node, supportType: .associatedtype)
     }
 }

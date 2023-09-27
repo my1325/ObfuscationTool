@@ -102,7 +102,11 @@ public extension CodeProtocol {
     }
     
     var content: String {
-        words.map(\.content).joined()
+        var retContent = words.map(\.content).joined()
+        if let index = retContent.firstIndex(where: { $0 != "\n" }) {
+            retContent = String(retContent[index ..< retContent.endIndex])
+        }
+        return retContent.appending("\n")
     }
 }
 
@@ -127,7 +131,11 @@ public extension CodeContainerProtocol {
     }
     
     var content: String {
-        String(format: "%@ {%@\n}", entireDeclare, code.map(\.content).joined())
+        var retContent = String(format: "%@ {%@\n}", entireDeclare, code.map(\.content).joined())
+        if let index = retContent.firstIndex(where: { $0 != "\n" }) {
+            retContent = String(retContent[index ..< retContent.endIndex])
+        }
+        return retContent.appending("\n")
     }
     
     var words: [CodeRawWordProtocol] {

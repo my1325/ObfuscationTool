@@ -6,59 +6,58 @@
 //
 
 import Cocoa
-import ProcessingFiles
-import SwiftFilePlugin
+// import SnapKit
+import Combine
 import FilePath
 import Plugins
-import SnapKit
-import Combine
+import ProcessingFiles
+import SwiftFilePlugin
 
 class ViewController: NSViewController {
-    private lazy var segmentedControl: SegmentedControl = {
-        $0.translatesAutoresizingMaskIntoConstraints = false
-        $0.items = ["Confusion", "Crypt"]
-        self.view.addSubview($0)
-        $0.snp.makeConstraints { make in
-            make.top.leading.trailing.equalTo(0)
-            make.height.equalTo(40)
-        }
-        return $0
-    }(SegmentedControl(frame: .zero))
-    
+//    private lazy var segmentedControl: SegmentedControl = {
+//        $0.translatesAutoresizingMaskIntoConstraints = false
+//        $0.items = ["Confusion", "Crypt"]
+//        self.view.addSubview($0)
+//        $0.snp.makeConstraints { make in
+//            make.top.leading.trailing.equalTo(0)
+//            make.height.equalTo(40)
+//        }
+//        return $0
+//    }(SegmentedControl(frame: .zero))
+
     var sinkStore: Set<AnyCancellable> = []
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
+//        segmentedControl.$selectedIndex.sink(receiveValue: {
+//            print($0)
+//        }).store(in: &sinkStore)
         
-        segmentedControl.$selectedIndex.sink(receiveValue: {
-            print($0)
-        }).store(in: &sinkStore)
+        testProcessingFile()
     }
-    
+
     func testProcessingFile() {
-        let filePath = DirectoryPath.desktop.appendFileName("ObfuscationToolTest", ext: "swift")
+        guard let filePath = Path.instanceOfPath("") else { return }
         let prefixPlugin = FileStringHandlePlugin([.prefix(mode: .addOrReplace, prefix: "ot", separator: "_")], codeType: [.func, .property, .line, .enumCase])
         let shufflePlugin = FileShuffleHandlePlugin(order: true)
-        let processingManager = ProcessingManager(path: filePath, fileHandlePlugins: [prefixPlugin, shufflePlugin])
+        let processingManager = ProcessingManager(path: filePath, fileHandlePlugins: [shufflePlugin])
         processingManager.registerPlugin(SwiftFileProcessingPlugin(), forFileType: .fSwift)
-        do {
-            let files = processingManager.processing()
-//            let lines = try files.map({ try $0.lines() }).reduce(0, +)
-//            let classes = files.map({ $0.getCodeContainer(.class).map(\.rawName).joined() }).joined()
-//            print("lines = \(lines)")
-//            print("classes = \(classes)")
-            
-            let fileString = try files.map({ try $0.getContent() }).joined()
-            print(fileString)
-        } catch {
-            print(error)
+        let files = processingManager.processing()
+        for file in files {
+            do {
+                if let data = try file.getContent().data(using: .utf8) {
+                    try file.filePath.writeData(data)
+                }
+            } catch {
+                print(error)
+            }
         }
     }
 
     override var representedObject: Any? {
         didSet {
-        // Update the view, if already loaded.
+            // Update the view, if already loaded.
         }
     }
 }
-

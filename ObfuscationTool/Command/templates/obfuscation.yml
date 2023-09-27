@@ -1,0 +1,15 @@
+git:
+    url: http://gitlab.wudi360.com/liqinglian/livekitswift.git
+    tag: 1.1.0
+#    branch: dev
+#path: ./BF_LiveKitSwift
+replace:
+    prefix:
+        BF: FB
+        bf: fb
+    handle_file: true
+shuffule:
+    order: true
+images:
+    compress: 1
+    md5: true
