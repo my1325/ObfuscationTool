@@ -11,6 +11,9 @@ enum ObfuscationError: Error, CustomStringConvertible {
     case unknownTemplateError(String)
     case unknownArgument(String, String)
     case underlyingError(Error)
+    case outputEmpty
+    case outputIsFile(String)
+    case codeCannotWrite(String)
     
     var message: String {
         switch self {
@@ -20,6 +23,12 @@ enum ObfuscationError: Error, CustomStringConvertible {
             return "unknonw argument \(argument) expected type \(expectedType)"
         case let .underlyingError(error):
             return "system error occurred \(error)"
+        case .outputEmpty:
+            return "output is empty"
+        case let .outputIsFile(outputFile):
+            return "output is file \(outputFile)"
+        case let .codeCannotWrite(code):
+            return "code \(code) write error"
         }
     }
     

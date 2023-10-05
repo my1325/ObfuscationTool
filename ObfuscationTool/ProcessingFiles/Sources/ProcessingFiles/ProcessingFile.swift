@@ -11,20 +11,47 @@ import Foundation
 
 public enum FileType {
     /// .swift
-    case fSwift
+    case swift
     /// .h
-    case fHeader
+    case header
     /// .m
-    case fImplemention
+    case implemention
+    /// bundle
+    case bundle
+    /// png/jpg/jpeg/gif
+    case image
+    /// svga
+    case svga
+    /// ttf/otf
+    case font
+    /// zip
+    case zip
+    /// assets
+    case assets
+    /// strings
+    case strings
     /// other
     case other
 
-    init(ext: String) {
+    public init(ext: String) {
         switch ext {
-        case "h": self = .fHeader
-        case "swift": self = .fSwift
-        case "m": self = .fImplemention
+        case "h": self = .header
+        case "swift": self = .swift
+        case "m": self = .implemention
+        case "png", "jpg", "jpeg", "gif": self = .image
+        case "svga": self = .svga
+        case "ttf", "otf": self = .font
+        case "zip": self = .zip
+        case "assets": self = .assets
+        case "strings": self = .strings
         default: self = .other
+        }
+    }
+    
+    public var isCode: Bool {
+        switch self {
+        case .header, .implemention, .swift: return true
+        default: return false
         }
     }
 }

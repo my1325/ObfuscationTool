@@ -1,29 +1,31 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by mayong on 2023/8/28.
 //
 
-import Foundation
-import FilePath
 import CodeProtocol
+import FilePath
+import Foundation
 
 public protocol ProcessingFilePlugin {
     func processingManager(_ manager: ProcessingManager, processedFile file: FilePathProtocol) throws -> [CodeRawProtocol]
+    
+    func processingManager(_ manager: ProcessingManager, completedProcessFile files: [ProcessingFile]) throws -> [ProcessingFile]
 }
 
-public protocol ProcessingFileHandlePlugin {
-    func processingManager(_ manager: ProcessingManager, didProcessedFiles files: [ProcessingFile]) -> [ProcessingFile]
+public protocol ProcessingManagerDelegate: AnyObject {
+    func processingManager(_ manager: ProcessingManager, willProcessing file: FilePathProtocol)
 }
 
 public final class ProcessingManager {
+    
+    public weak var delegate: ProcessingManagerDelegate?
         
-    public let fileHandlePlugins: [ProcessingFileHandlePlugin]
     public let path: PathProtocol
-    public init(path: PathProtocol, fileHandlePlugins: [ProcessingFileHandlePlugin]) {
+    public init(path: PathProtocol) {
         self.path = path
-        self.fileHandlePlugins = fileHandlePlugins
     }
     
     public private(set) var pluginCache: [FileType: ProcessingFilePlugin] = [:]
@@ -35,31 +37,36 @@ public final class ProcessingManager {
     
     public func processingString() throws -> String {
         try processing()
-            .map({ try $0.getContent() })
+            .map { try $0.getContent() }
             .joined()
     }
     
-    public func processing() -> [ProcessingFile] {
+    public func processing() throws -> [ProcessingFile] {
         guard path.isExists else { return [] }
+        var retFiles: [FileType: [ProcessingFile]] = [:]
         if path.isFile {
             if let processedFile = processingFile(path as! FilePath) {
-                return handleFiles([processedFile])
+                retFiles = [processedFile.fileType: [processedFile]]
             }
-            return []
         } else {
-            return handleFiles(processingDirectory(path as! DirectoryPath))
+            retFiles = processingDirectory(path as! DirectoryPath)
         }
+        return try retFiles
+            .map {
+                if let plugin = self.pluginCache[$0.key] {
+                    return try plugin.processingManager(self, completedProcessFile: $0.value)
+                }
+                return $0.value
+            }
+            .flatMap { $0 }
     }
 }
 
 // MARK: - Private
+
 extension ProcessingManager {
-    
-    private func handleFiles(_ files: [ProcessingFile]) -> [ProcessingFile] {
-        fileHandlePlugins.reduce(files, { $1.processingManager(self, didProcessedFiles: $0) })
-    }
-    
     private func processingFile(_ filePath: FilePath) -> ProcessingFile? {
+        delegate?.processingManager(self, willProcessing: filePath)
         let fileType = FileType(ext: filePath.pathExtension)
         do {
             if let handlePlugin = pluginCache[fileType] {
@@ -74,15 +81,18 @@ extension ProcessingManager {
         }
     }
     
-    private func processingDirectory(_ direcotryPath: DirectoryPath) -> [ProcessingFile] {
-        var processedFiles: [ProcessingFile] = []
+    private func processingDirectory(_ direcotryPath: DirectoryPath) -> [FileType: [ProcessingFile]] {
+        var processedFiles: [FileType: [ProcessingFile]] = [:]
         for path in direcotryPath.directoryIterator() {
             if path.isFile {
                 if let processedFile = processingFile(path as! FilePath) {
-                    processedFiles.append(processedFile)
+                    let type = processedFile.fileType
+                    var files = processedFiles[type] ?? []
+                    files.append(processedFile)
+                    processedFiles[type] = files
                 }
             } else {
-                processedFiles.append(contentsOf: processingDirectory(path as! DirectoryPath))
+                processedFiles.merge(processingDirectory(path as! DirectoryPath), uniquingKeysWith: { $0 + $1 })
             }
         }
         return processedFiles

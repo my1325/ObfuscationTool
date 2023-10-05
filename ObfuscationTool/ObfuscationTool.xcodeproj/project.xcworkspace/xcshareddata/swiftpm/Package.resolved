@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "Clibgit2",
-        "repositoryURL": "https://github.com/light-tech/Clibgit2.git",
-        "state": {
-          "branch": "master",
-          "revision": "0b01e2b814c8ad5dc0690f1fa9d0e8ffa7461d14",
-          "version": null
-        }
-      },
-      {
         "package": "Commander",
         "repositoryURL": "https://github.com/kylef/Commander.git",
         "state": {
@@ -24,7 +15,7 @@
         "repositoryURL": "https://github.com/my1325/FilePath.git",
         "state": {
           "branch": "main",
-          "revision": "9a4590949c55f91cce5f2af031a6bb3b876cbac0",
+          "revision": "4dd4c9bbf171be3586a6cb21ec2467d1c3401ada",
           "version": null
         }
       },
@@ -38,20 +29,20 @@
         }
       },
       {
-        "package": "swift-syntax",
-        "repositoryURL": "https://github.com/apple/swift-syntax.git",
+        "package": "SSZipArchive",
+        "repositoryURL": "https://github.com/my1325/SSZipArchive.git",
         "state": {
-          "branch": "main",
-          "revision": "b4749403093de49b11418d7bd80f7ee2b4a926dd",
+          "branch": "master",
+          "revision": "236f3d4381dba9febc19efde7b653c732b63c41d",
           "version": null
         }
       },
       {
-        "package": "SwiftGit2",
-        "repositoryURL": "https://github.com/light-tech/SwiftGit2.git",
+        "package": "swift-syntax",
+        "repositoryURL": "https://github.com/apple/swift-syntax.git",
         "state": {
-          "branch": "spm",
-          "revision": "03e7f41edf53658958c74db106749923ca9dcda0",
+          "branch": "main",
+          "revision": "f9744529b24e6a118ca29c12dfdc1103a3738819",
           "version": null
         }
       },

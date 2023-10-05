@@ -8,8 +8,10 @@
 import CodeProtocol
 import Foundation
 import ProcessingFiles
+import SwiftFilePlugin
 
-open class FileStringHandlePlugin: ProcessingFileHandlePlugin {
+open class FileStringHandlePlugin: SwiftFileProcessingHandlePluginProtocol {
+    
     public enum HandleMode {
         public enum PrefixMode {
             case add
@@ -48,10 +50,8 @@ open class FileStringHandlePlugin: ProcessingFileHandlePlugin {
         self.handlers = mode.map { $0.handler(codeType, codeContainerType: codeContainerType) }
     }
     
-    public func processingManager(_ manager: ProcessingManager, didProcessedFiles files: [ProcessingFile]) -> [ProcessingFile] {
-        let allCode = files.map { $0.codes }
-            .map(extactCode)
-            .flatMap { $0 }
+    public func processingPlugin(_ plugin: SwiftFileProcessingPlugin, didProcessedFiles file: ProcessingFile) -> ProcessingFile {
+        let fileCode = extactCode(file.codes)
             .filter {
                 if let code = $0 as? CodeProtocol, self.shouldHandleCode(code.type) {
                     return true
@@ -61,8 +61,12 @@ open class FileStringHandlePlugin: ProcessingFileHandlePlugin {
                     return false
                 }
             }
-        handlers.forEach { $0.prepareWithAllCode(allCode) }
-        return files.map(handleFile)
+        handlers.forEach { $0.prepareWithAllCode(fileCode) }
+        return file
+    }
+    
+    public func processingPlugin(_ plugin: SwiftFileProcessingPlugin, didCompleteProcessedFiles files: [ProcessingFile]) -> [ProcessingFile] {
+        files.map(handleFile)
     }
     
     private func extactCode(_ code: [CodeRawProtocol]) -> [CodeRawProtocol] {

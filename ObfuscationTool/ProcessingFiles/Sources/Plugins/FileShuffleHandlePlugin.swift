@@ -8,15 +8,21 @@
 import CodeProtocol
 import Foundation
 import ProcessingFiles
+import SwiftFilePlugin
 
-open class FileShuffleHandlePlugin: ProcessingFileHandlePlugin {
+open class FileShuffleHandlePlugin: SwiftFileProcessingHandlePluginProtocol {
+    
     public let order: Bool
     public init(order: Bool = false) {
         self.order = order
     }
     
-    public func processingManager(_ manager: ProcessingManager, didProcessedFiles files: [ProcessingFile]) -> [ProcessingFile] {
-        files.map(shuffledFile)
+    public func processingPlugin(_ plugin: SwiftFileProcessingPlugin, didProcessedFiles file: ProcessingFile) -> ProcessingFile {
+        shuffledFile(file)
+    }
+    
+    public func processingPlugin(_ plugin: SwiftFileProcessingPlugin, didCompleteProcessedFiles files: [ProcessingFile]) -> [ProcessingFile] {
+        files
     }
     
     func shuffledFile(_ file: ProcessingFile) -> ProcessingFile {

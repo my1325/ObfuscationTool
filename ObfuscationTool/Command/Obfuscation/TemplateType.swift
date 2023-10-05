@@ -27,17 +27,23 @@ enum TemplateType {
         url: http://gitlab.wudi360.com/liqinglian/livekitswift.git
         tag: 1.1.0
     #    branch: dev
-    #path: ./BF_LiveKitSwift
+    #path: BF_LiveKitSwift/
     replace:
-        prefix:
-            BF: FB
-            bf: fb
+        map:
+            BF_: FB_
+            bf_: fb_
         handle_file: true
+    #prefix:
+        #prefix: bf
+        #separator: -
+        #handle_file: true
+        #should_add: false
     shuffule:
         order: true
     images:
         compress: 1
         md5: true
+    output: ObfuscationCode/
     """
     }
     

@@ -29,6 +29,7 @@ let package = Package(
         .target(name: "Plugins", dependencies: [
             "CodeProtocol",
             "ProcessingFiles",
+            "SwiftFilePlugin",
             "FilePath",
         ])
     ]

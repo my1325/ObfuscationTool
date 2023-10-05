@@ -41,17 +41,21 @@ class ViewController: NSViewController {
         guard let filePath = Path.instanceOfPath("") else { return }
         let prefixPlugin = FileStringHandlePlugin([.prefix(mode: .addOrReplace, prefix: "ot", separator: "_")], codeType: [.func, .property, .line, .enumCase])
         let shufflePlugin = FileShuffleHandlePlugin(order: true)
-        let processingManager = ProcessingManager(path: filePath, fileHandlePlugins: [shufflePlugin])
-        processingManager.registerPlugin(SwiftFileProcessingPlugin(), forFileType: .fSwift)
-        let files = processingManager.processing()
-        for file in files {
-            do {
-                if let data = try file.getContent().data(using: .utf8) {
-                    try file.filePath.writeData(data)
+        let processingManager = ProcessingManager(path: filePath)
+        processingManager.registerPlugin(SwiftFileProcessingPlugin(plugins: [shufflePlugin]), forFileType: .fSwift)
+        do {
+            let files = try processingManager.processing()
+            for file in files {
+                do {
+                    if let data = try file.getContent().data(using: .utf8) {
+                        try file.filePath.writeData(data)
+                    }
+                } catch {
+                    print(error)
                 }
-            } catch {
-                print(error)
             }
+        } catch {
+            print(error)
         }
     }
 

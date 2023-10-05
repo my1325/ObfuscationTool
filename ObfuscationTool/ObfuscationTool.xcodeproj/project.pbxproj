@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0FD3DF852ACEA81300740948 /* SSZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 0FD3DF842ACEA81300740948 /* SSZipArchive */; };
 		0FF5F77C2AA39E94001B432B /* ProcessingFiles in Frameworks */ = {isa = PBXBuildFile; productRef = 0FF5F77B2AA39E94001B432B /* ProcessingFiles */; };
 		B7587B4F2A8F6CD600C78D4D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7587B4E2A8F6CD600C78D4D /* AppDelegate.swift */; };
 		B7587B512A8F6CD600C78D4D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7587B502A8F6CD600C78D4D /* ViewController.swift */; };
@@ -22,11 +23,9 @@
 		B7D3D0312AC3F4A400B88A9B /* FilePath in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0302AC3F4A400B88A9B /* FilePath */; };
 		B7D3D03D2AC3F54500B88A9B /* Commander in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D03C2AC3F54500B88A9B /* Commander */; };
 		B7D3D0402AC3F56400B88A9B /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D03F2AC3F56400B88A9B /* Yams */; };
-		B7D3D0432AC3F59E00B88A9B /* SwiftGit2 in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0422AC3F59E00B88A9B /* SwiftGit2 */; };
 		B7D3D0452AC3F5AC00B88A9B /* FilePath in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0442AC3F5AC00B88A9B /* FilePath */; };
 		B7D3D0472AC3F5AC00B88A9B /* Commander in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0462AC3F5AC00B88A9B /* Commander */; };
 		B7D3D0492AC3F5AD00B88A9B /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0482AC3F5AD00B88A9B /* Yams */; };
-		B7D3D04B2AC3F5AD00B88A9B /* SwiftGit2 in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D04A2AC3F5AD00B88A9B /* SwiftGit2 */; };
 		B7D43FAB2AAAE2DC007713F0 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D43FAA2AAAE2DC007713F0 /* SegmentedControl.swift */; };
 /* End PBXBuildFile section */
 
@@ -68,7 +67,7 @@
 			files = (
 				0FF5F77C2AA39E94001B432B /* ProcessingFiles in Frameworks */,
 				B7D3D03D2AC3F54500B88A9B /* Commander in Frameworks */,
-				B7D3D0432AC3F59E00B88A9B /* SwiftGit2 in Frameworks */,
+				0FD3DF852ACEA81300740948 /* SSZipArchive in Frameworks */,
 				B7D3D0402AC3F56400B88A9B /* Yams in Frameworks */,
 				B7D3D0312AC3F4A400B88A9B /* FilePath in Frameworks */,
 			);
@@ -80,7 +79,6 @@
 			files = (
 				B77B6D092AC2894800F172F3 /* ProcessingFiles in Frameworks */,
 				B7D3D0472AC3F5AC00B88A9B /* Commander in Frameworks */,
-				B7D3D04B2AC3F5AD00B88A9B /* SwiftGit2 in Frameworks */,
 				B7D3D0492AC3F5AD00B88A9B /* Yams in Frameworks */,
 				B7D3D0452AC3F5AC00B88A9B /* FilePath in Frameworks */,
 			);
@@ -196,7 +194,7 @@
 				B7D3D0302AC3F4A400B88A9B /* FilePath */,
 				B7D3D03C2AC3F54500B88A9B /* Commander */,
 				B7D3D03F2AC3F56400B88A9B /* Yams */,
-				B7D3D0422AC3F59E00B88A9B /* SwiftGit2 */,
+				0FD3DF842ACEA81300740948 /* SSZipArchive */,
 			);
 			productName = ObfuscationTool;
 			productReference = B7587B4B2A8F6CD600C78D4D /* ObfuscationTool.app */;
@@ -220,7 +218,6 @@
 				B7D3D0442AC3F5AC00B88A9B /* FilePath */,
 				B7D3D0462AC3F5AC00B88A9B /* Commander */,
 				B7D3D0482AC3F5AD00B88A9B /* Yams */,
-				B7D3D04A2AC3F5AD00B88A9B /* SwiftGit2 */,
 			);
 			productName = Commond;
 			productReference = B77B6CF82AC2821F00F172F3 /* Command */;
@@ -257,7 +254,7 @@
 				B7D3D02F2AC3F4A400B88A9B /* XCRemoteSwiftPackageReference "FilePath" */,
 				B7D3D03B2AC3F54500B88A9B /* XCRemoteSwiftPackageReference "Commander" */,
 				B7D3D03E2AC3F56400B88A9B /* XCRemoteSwiftPackageReference "Yams" */,
-				B7D3D0412AC3F59E00B88A9B /* XCRemoteSwiftPackageReference "SwiftGit2" */,
+				0FD3DF832ACEA81300740948 /* XCRemoteSwiftPackageReference "SSZipArchive" */,
 			);
 			productRefGroup = B7587B4C2A8F6CD600C78D4D /* Products */;
 			projectDirPath = "";
@@ -555,6 +552,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		0FD3DF832ACEA81300740948 /* XCRemoteSwiftPackageReference "SSZipArchive" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/my1325/SSZipArchive.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		B7D3D02F2AC3F4A400B88A9B /* XCRemoteSwiftPackageReference "FilePath" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/my1325/FilePath.git";
@@ -579,17 +584,14 @@
 				minimumVersion = 5.0.0;
 			};
 		};
-		B7D3D0412AC3F59E00B88A9B /* XCRemoteSwiftPackageReference "SwiftGit2" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/light-tech/SwiftGit2.git";
-			requirement = {
-				branch = spm;
-				kind = branch;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		0FD3DF842ACEA81300740948 /* SSZipArchive */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0FD3DF832ACEA81300740948 /* XCRemoteSwiftPackageReference "SSZipArchive" */;
+			productName = SSZipArchive;
+		};
 		0FF5F77B2AA39E94001B432B /* ProcessingFiles */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ProcessingFiles;
@@ -613,11 +615,6 @@
 			package = B7D3D03E2AC3F56400B88A9B /* XCRemoteSwiftPackageReference "Yams" */;
 			productName = Yams;
 		};
-		B7D3D0422AC3F59E00B88A9B /* SwiftGit2 */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B7D3D0412AC3F59E00B88A9B /* XCRemoteSwiftPackageReference "SwiftGit2" */;
-			productName = SwiftGit2;
-		};
 		B7D3D0442AC3F5AC00B88A9B /* FilePath */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B7D3D02F2AC3F4A400B88A9B /* XCRemoteSwiftPackageReference "FilePath" */;
@@ -632,11 +629,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B7D3D03E2AC3F56400B88A9B /* XCRemoteSwiftPackageReference "Yams" */;
 			productName = Yams;
-		};
-		B7D3D04A2AC3F5AD00B88A9B /* SwiftGit2 */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B7D3D0412AC3F59E00B88A9B /* XCRemoteSwiftPackageReference "SwiftGit2" */;
-			productName = SwiftGit2;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
