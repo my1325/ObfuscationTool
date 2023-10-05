@@ -8,7 +8,7 @@
 import Commander
 import FilePath
 
-let currentWorkSpace = DirectoryPath.desktop
+let currentWorkSpace = DirectoryPath(path: "/Users/my/Desktop/mulitbeam/")
 
 private let YESEnum = ["yes", "Yes", "YES", "true", "True", "TRUE"]
 private let NOEnum = ["no", "No", "NO", "false", "False", "FALSE"]
@@ -46,7 +46,9 @@ let commandGroup = Group {
         do {
             let yamlHandler = YAMLHandler.handlerWithWorkSpace(currentWorkSpace, template: try .init(rawValue: $0))
             let yamlConfig = try yamlHandler.loadYaml()
-
+            
+            let obfuscation = Obfuscation(config: yamlConfig)
+            try obfuscation.run()
             print("run success")
         } catch {
             print("\(error)")

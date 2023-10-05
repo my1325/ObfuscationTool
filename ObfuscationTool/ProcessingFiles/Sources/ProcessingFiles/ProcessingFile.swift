@@ -30,6 +30,8 @@ public enum FileType {
     case assets
     /// strings
     case strings
+    /// lproj
+    case lproj
     /// other
     case other
 
@@ -44,6 +46,7 @@ public enum FileType {
         case "zip": self = .zip
         case "assets": self = .assets
         case "strings": self = .strings
+        case "lproj": self = .lproj
         default: self = .other
         }
     }
@@ -57,15 +60,20 @@ public enum FileType {
 }
 
 public final class ProcessingFile {
-    public let filePath: FilePath
+    public let filePath: PathProtocol
     public let fileType: FileType
-    public init(filePath: FilePath, fileType: FileType) {
+    public init(filePath: PathProtocol, fileType: FileType) {
         self.filePath = filePath
         self.fileType = fileType
     }
 
     public func getContent() throws -> String {
-        guard !codes.isEmpty else { return try filePath.readLines().joined() }
+        guard !codes.isEmpty else {
+            if let path = filePath as? FilePathProtocol {
+                return try path.readLines().joined()
+            }
+            return filePath.path
+        }
         return codes.map(\.content).joined()
     }
 
@@ -100,8 +108,8 @@ public final class ProcessingFile {
     }
     
     public func writeToFile(_ encoding: String.Encoding = .utf8) throws {
-        if let data = try getContent().data(using: encoding) {
-            try filePath.writeData(data)
+        if let path = filePath as? FilePathProtocol, let data = try getContent().data(using: encoding) {
+            try path.writeData(data)
         }
     }
 }

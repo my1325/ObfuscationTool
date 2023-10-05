@@ -35,7 +35,7 @@ enum TemplateType {
         handle_file: true
     #prefix:
         #prefix: bf
-        #separator: -
+        #separator: '-'
         #handle_file: true
         #should_add: false
     shuffule:
@@ -43,6 +43,13 @@ enum TemplateType {
     images:
         compress: 1
         md5: true
+    zips:
+       -
+        name: resources.zip
+        password: 123456
+       -
+        name: resources.zip
+        new_password: 123456
     output: ObfuscationCode/
     """
     }

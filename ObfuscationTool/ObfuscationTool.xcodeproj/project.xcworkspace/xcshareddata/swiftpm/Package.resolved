@@ -15,7 +15,7 @@
         "repositoryURL": "https://github.com/my1325/FilePath.git",
         "state": {
           "branch": "main",
-          "revision": "4dd4c9bbf171be3586a6cb21ec2467d1c3401ada",
+          "revision": "85180283083de99354b0ab46147e1ac3835b927c",
           "version": null
         }
       },
@@ -26,15 +26,6 @@
           "branch": null,
           "revision": "26cc5e9ae0947092c7139ef7ba612e34646086c7",
           "version": "0.10.1"
-        }
-      },
-      {
-        "package": "SSZipArchive",
-        "repositoryURL": "https://github.com/my1325/SSZipArchive.git",
-        "state": {
-          "branch": "master",
-          "revision": "236f3d4381dba9febc19efde7b653c732b63c41d",
-          "version": null
         }
       },
       {
@@ -53,6 +44,24 @@
           "branch": null,
           "revision": "0d9ee7ea8c4ebd4a489ad7a73d5c6cad55d6fed3",
           "version": "5.0.6"
+        }
+      },
+      {
+        "package": "Zip",
+        "repositoryURL": "https://github.com/marmelroy/Zip.git",
+        "state": {
+          "branch": null,
+          "revision": "67fa55813b9e7b3b9acee9c0ae501def28746d76",
+          "version": "2.1.2"
+        }
+      },
+      {
+        "package": "ZipArchive",
+        "repositoryURL": "https://github.com/ZipArchive/ZipArchive.git",
+        "state": {
+          "branch": null,
+          "revision": "79d4dc9729096c6ad83dd3cee2b9f354d1b4ab7b",
+          "version": "2.5.5"
         }
       }
     ]
