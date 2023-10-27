@@ -686,8 +686,8 @@ class ReadNode {
         var isDir:ObjCBool = true
         _ = FileManager.default.fileExists(atPath: rootDirectorPath, isDirectory: &isDir)
         let judgeFile:((String?) -> Bool) = { str in
-//            return str == "h" || str == "m" || str == "c" || str == "mm"
-            return str == "swift"
+            return str == "h" || str == "m" || str == "c" || str == "mm"
+//            return str == "swift"
         }
         
         if !isDir.boolValue {
@@ -729,13 +729,15 @@ class ReadNode {
     
     private class func writeCode(fileNodes:[FileNode]) {
         for fileNode in fileNodes {
-            writeStr(filePath: fileNode.filePath, str: fileNode.code)
+            writeStr(filePathStr: fileNode.filePath, str: fileNode.code)
         }
     }
     
-    private class func writeStr(filePath:String, str:String) {
+    private class func writeStr(filePathStr:String, str:String) {
         let newCode:String = str
-        let filePath = FilePath.file(file: filePath)
+        let filePath = FilePath.file(file: filePathStr)
+        try? FileManager.default.removeItem(atPath: filePathStr)
+        
         if let data = newCode.data(using: .utf8) {
             try? filePath.writeData(data)
         }
@@ -763,7 +765,7 @@ class ReadNode {
                         }
                     }
                 }
-                writeStr(filePath: file, str: newStr as String)
+                writeStr(filePathStr: file, str: newStr as String)
             }
         }
     }
@@ -812,7 +814,7 @@ class ReadNode {
                  */
                 
                 newStr = replaceStr(originStr: newStr, matchStr: "\"([^\"].*)\"")//"\"([^\"]*)\"" 有问题
-                writeStr(filePath: file, str: newStr)
+                writeStr(filePathStr: file, str: newStr)
                 
             }
         }
@@ -850,7 +852,7 @@ class ReadNode {
             let file = FilePath.file(file: filePathStr)
             if let data = try? file.readData(), let codeStr = String(data: data, encoding: .utf8) {
                 let newStr = replaceStr(originStr: codeStr, matchStr: "(?<!:)\\/\\/.*|\\/\\*(\\s|.)*?\\*\\/")
-                writeStr(filePath: filePathStr, str: newStr)
+                writeStr(filePathStr: filePathStr, str: newStr)
             }
             let newFile = FilePath.file(file: filePathStr)
             var fileLineItems = (try? newFile.readLines()) ?? []
@@ -862,7 +864,7 @@ class ReadNode {
                 return false
             })
             let newContentStr = fileLineItems.joined(separator: "\n")
-            writeStr(filePath: filePathStr, str: newContentStr)
+            writeStr(filePathStr: filePathStr, str: newContentStr)
         }
     }
     
@@ -942,18 +944,19 @@ class ReadNode {
             deletNote(filePathStr: filePathStr)
         }
 
-        var fileNodes:[FileNode] = []
-        for filePathStr in filePathStrs {
-            fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
-        }
-
-        for fileNode in fileNodes {
-            let newCode:String = fileNode.getString(addRubbish: true)
-            let filePath = FilePath.file(file: fileNode.filePath)
-            if let data = newCode.data(using: .utf8) {
-                try? filePath.writeData(data)
-            }
-        }
+//        var fileNodes:[FileNode] = []
+//        for filePathStr in filePathStrs {
+//            fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
+//        }
+//
+//        for fileNode in fileNodes {
+//            let newCode:String = fileNode.getString(addRubbish: false)
+//            let filePath = FilePath.file(file: fileNode.filePath)
+//            try? FileManager.default.removeItem(atPath: fileNode.filePath)
+//            if let data = newCode.data(using: .utf8) {
+//                try? filePath.writeData(data)
+//            }
+//        }
         for filePathStr in filePathStrs {
             reductionCustomStr(filePathStr: filePathStr)
         }

@@ -40,6 +40,7 @@ class ViewController: NSViewController {
 //        self.view.addSubview(indictor)
 //        indictor.animator()
         ReadNode.replaceClaseName(filePathStrs: filePaths, preStr: preStr)
+        print("替换完成")
     }
     
     @IBAction func clickExchang(_ sender: NSButton) {
@@ -56,6 +57,7 @@ class ViewController: NSViewController {
             }
         }
         ReadNode.exchageLineFileNodes(filePathStrs: filePaths)
+        print("操作完成")
     }
 }
 
