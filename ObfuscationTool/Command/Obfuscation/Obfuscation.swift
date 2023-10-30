@@ -31,7 +31,7 @@ internal final class Obfuscation {
             if input.starts(with: "/") {
                 inputPath = DirectoryPath(path: input)
             } else {
-                inputPath = DirectoryPath.current.appendConponent(input)
+                inputPath = currentWorkSpace.appendConponent(input)
             }
             try checkPath(inputPath, output: outputDirection)
         }
@@ -59,7 +59,7 @@ internal final class Obfuscation {
             let separator = prefixConfig.separator?.first ?? "-"
             let prefixMode: HandleMode.PrefixMode = shouldAdd ? .addOrReplace : .replace
             let handleMode: [HandleMode] = [.prefix(mode: prefixMode, prefix: prefixString, separator: separator)]
-            let prefixPlugin = FileStringHandlePlugin(handleMode)
+            let prefixPlugin = FileStringHandlePlugin(handleMode, codeType: [.property, .func], codeContainerType: [.none])
             plugins.append(prefixPlugin)
         }
         
@@ -74,7 +74,7 @@ internal final class Obfuscation {
                                                       zips: zips)
         
         let processingManager = ProcessingManager(path: filePath)
-//        processingManager.registerPlugin(SwiftFileProcessingPlugin(plugins: plugins), forFileType: .swift)
+        processingManager.registerPlugin(SwiftFileProcessingPlugin(plugins: plugins), forFileType: .swift)
         processingManager.registerPlugin(resourcePlugin, forFileType: .image)
         processingManager.registerPlugin(resourcePlugin, forFileType: .bundle)
         processingManager.registerPlugin(resourcePlugin, forFileType: .assets)
@@ -110,11 +110,11 @@ internal final class Obfuscation {
     
     private func checkOutput() throws -> DirectoryPathProtocol {
         guard let output, !output.isEmpty else { throw ObfuscationError.outputEmpty }
-        var outputPath: DirectoryPathProtocol = DirectoryPath.current
+        var outputPath: DirectoryPathProtocol = currentWorkSpace
         if output.starts(with: "/") {
             outputPath = DirectoryPath(path: output)
         } else {
-            outputPath = DirectoryPath.current.appendConponent(output)
+            outputPath = currentWorkSpace.appendConponent(output)
         }
         
         if outputPath.isFile {
@@ -138,8 +138,12 @@ internal final class Obfuscation {
     }
     
     private func getFilename(_ origin: String) -> String {
+        var retName = origin
+        if retName.hasPrefix("/") {
+            retName.removeFirst()
+        }
+        
         var handleFile = config.replace?.handleFile ?? true
-        var retName: String = origin
         if handleFile, let replace = config.replace { retName = replace.getName(retName) }
         
         handleFile = config.prefix?.handleFile ?? true
@@ -169,6 +173,9 @@ extension Obfuscation: ProcessingManagerDelegate {
     }
     
     private func isHandledFile(_ fileType: FileType) -> Bool {
-       true
+        switch fileType {
+        case .header, .implemention: return false
+        default: return true
+        }
     }
 }

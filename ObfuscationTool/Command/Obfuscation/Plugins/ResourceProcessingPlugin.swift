@@ -22,6 +22,10 @@ public final class ResourceProcessingPlugin: ProcessingFilePlugin {
         self.zips = zips
     }
     
+    public func processingManager(_ manager: ProcessingManager, didProcessedFile file:ProcessingFile) throws -> ProcessingFile {
+        file
+    }
+    
     public func processingManager(_ manager: ProcessingManager, processedDirectoryOrFile path: PathProtocol) throws -> ProcessingFile {
         let fileType = FileType(ext: path.pathExtension)
         switch fileType {
@@ -179,13 +183,25 @@ internal final class AssetsResourcePluginTools: ResourcePluginTools {
             name = String(name[name.startIndex ..< lastIndex])
         }
         
+        if name.hasPrefix("/") {
+            name.removeFirst()
+        }
+        
         let jsonData = try contents.readData()
         if var jsonDict = try JSONSerialization.jsonObject(with: jsonData, options: .mutableLeaves) as? [String: Any],
            var images = jsonDict["images"] as? [[String: Any]]
         {
             for index in 0 ..< images.count {
                 var imageDict = images[index]
-                imageDict["filename"] = name
+                let scale = (imageDict["scale"] as? String) ?? ""
+                let filename = (imageDict["filename"] as? String) ?? ""
+                if scale == "2x", !filename.isEmpty {
+                    imageDict["filename"] = String(format: "%@@2x.png", name)
+                } else if scale == "3x", !filename.isEmpty {
+                    imageDict["filename"] = String(format: "%@@3x.png", name)
+                } else if !filename.isEmpty {
+                    imageDict["filename"] = String(format: "%@@1x.png", name)
+                }
                 images[index] = imageDict
             }
             jsonDict["images"] = images
@@ -223,7 +239,7 @@ internal final class ZipResourcePluginTools: ResourcePluginTools {
         }
         let zip = zipPassword(path, named: name)
         _ = SSZipArchive.unzipFile(atPath: path.path,
-                                   toDestination: unArchivePath.path,
+                                   toDestination: unArchivePath.appendConponent(name).path,
                                    overwrite: true, password: zip?.password,
                                    progressHandler: nil)
         

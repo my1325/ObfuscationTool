@@ -11,7 +11,6 @@ import ProcessingFiles
 import SwiftFilePlugin
 
 open class FileStringHandlePlugin: SwiftFileProcessingHandlePluginProtocol {
-    
     public enum HandleMode {
         public enum PrefixMode {
             case add
@@ -97,19 +96,26 @@ open class FileStringHandlePlugin: SwiftFileProcessingHandlePluginProtocol {
     private func handleCode(_ rawCode: CodeRawProtocol) -> CodeRawProtocol {
         if let code = rawCode as? CodeProtocol, shouldHandleCode(code.type) {
             return handleCode(code)
-        } else if let code = rawCode as? CodeContainerProtocol, shouldHandleCodeContainer(code.type) {
-            return handleCodeContainer(code)
+        } else if let code = rawCode as? CodeContainerProtocol {
+            if shouldHandleCodeContainer(code.type) {
+                return handleCodeContainer(code)
+            } else {
+                return CodeContainer(type: code.type,
+                                     entireDeclareWord: code.entireDeclareWord,
+                                     code: code.code.map(handleCode),
+                                     rawName: code.rawName)
+            }
         } else {
             return rawCode
         }
     }
     
     private func handleCode(_ code: CodeProtocol) -> CodeProtocol {
-        handlers.reduce(code) { $1.handleCode(code) }
+        handlers.reduce(code) { $1.handleCode($0) }
     }
     
     private func handleCodeContainer(_ code: CodeContainerProtocol) -> CodeContainerProtocol {
-        handlers.reduce(code) { $1.handleCodeContainer(code) }
+        handlers.reduce(code) { $1.handleCodeContainer($0) }
     }
 }
 

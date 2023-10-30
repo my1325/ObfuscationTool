@@ -41,9 +41,11 @@ public enum CodeType {
     case `deinit`
     case `subscript`
     case macro
+    case none
     
     public var order: CodeOrder {
         switch self {
+        case .none: return .top
         case .import, .`init`, .enumCase: return .topMost
         case .line, .macro: return .top
         case .property: return .top
@@ -60,9 +62,11 @@ public enum CodeContainerType {
     case `extension`
     case `protocol`
     case block
+    case none
     
     public var order: CodeOrder {
         switch self {
+        case .none: return .top
         case .protocol: return .topMost
         case .enum, .struct, .block: return .top
         case .class: return .middle
@@ -131,7 +135,7 @@ public extension CodeContainerProtocol {
     }
     
     var content: String {
-        var retContent = String(format: "%@ {%@\n}", entireDeclare, code.map(\.content).joined())
+        var retContent = String(format: "%@ {\n%@\n}", entireDeclare, code.map(\.content).joined())
         if let index = retContent.firstIndex(where: { $0 != "\n" }) {
             retContent = String(retContent[index ..< retContent.endIndex])
         }

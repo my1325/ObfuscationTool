@@ -38,6 +38,10 @@ open class SwiftFileProcessingPlugin: ProcessingFilePlugin {
         return walker.walk().map(\.asRawCode)
     }
     
+    public func processingManager(_ manager: ProcessingManager, didProcessedFile file: ProcessingFile) throws -> ProcessingFile {
+        plugins.reduce(file, { $1.processingPlugin(self, didProcessedFiles: $0) })
+    }
+    
     public func processingManager(_ manager: ProcessingManager, completedProcessFile files: [ProcessingFile]) throws -> [ProcessingFile] {
         plugins.reduce(files, { $1.processingPlugin(self, didCompleteProcessedFiles: $0) })
     }

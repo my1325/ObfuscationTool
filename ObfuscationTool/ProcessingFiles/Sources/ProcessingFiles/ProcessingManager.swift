@@ -12,6 +12,8 @@ import Foundation
 public protocol ProcessingFilePlugin {
     func processingManager(_ manager: ProcessingManager, processedFile file: FilePathProtocol) throws -> [CodeRawProtocol]
     
+    func processingManager(_ manager: ProcessingManager, didProcessedFile file: ProcessingFile) throws -> ProcessingFile
+    
     func processingManager(_ manager: ProcessingManager, processedDirectoryOrFile path: PathProtocol) throws -> ProcessingFile
 
     func processingManager(_ manager: ProcessingManager, completedProcessFile files: [ProcessingFile]) throws -> [ProcessingFile]
@@ -91,7 +93,8 @@ extension ProcessingManager {
                     let codes = try handlePlugin.processingManager(self, processedFile: filePath)
                     let file = ProcessingFile(filePath: filePath, fileType: fileType)
                     file.setCodes(codes)
-                    return file
+                    let newFile = try handlePlugin.processingManager(self, didProcessedFile: file)
+                    return newFile
                 default:
                     let file = try handlePlugin.processingManager(self, processedDirectoryOrFile: filePath)
                     return file

@@ -44,7 +44,7 @@ public enum FileType {
         case "svga": self = .svga
         case "ttf", "otf": self = .font
         case "zip": self = .zip
-        case "assets": self = .assets
+        case "xcassets": self = .assets
         case "strings": self = .strings
         case "lproj": self = .lproj
         default: self = .other
