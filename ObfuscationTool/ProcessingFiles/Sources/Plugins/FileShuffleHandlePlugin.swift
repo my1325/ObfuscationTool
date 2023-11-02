@@ -38,7 +38,7 @@ open class FileShuffleHandlePlugin: SwiftFileProcessingHandlePluginProtocol {
     }
     
     func shuffledCode(_ code: CodeRawProtocol) -> CodeRawProtocol {
-        if let codeContainer = code as? CodeContainerProtocol {
+        if let codeContainer = code as? CodeContainerProtocol, codeContainer.type != .struct {
             return shuffledCodeContaier(codeContainer)
         }
         return code
