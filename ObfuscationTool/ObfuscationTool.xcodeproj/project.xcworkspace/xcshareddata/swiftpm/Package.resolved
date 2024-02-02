@@ -18,15 +18,6 @@
           "revision": "b4749403093de49b11418d7bd80f7ee2b4a926dd",
           "version": null
         }
-      },
-      {
-        "package": "SwiftString",
-        "repositoryURL": "https://github.com/my1325/SwiftString.git",
-        "state": {
-          "branch": "main",
-          "revision": "9ff837cbfd3bb93cdb5b1809289373280e3e1ca8",
-          "version": null
-        }
       }
     ]
   },

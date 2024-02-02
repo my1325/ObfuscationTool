@@ -11,20 +11,17 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/my1325/FilePath.git", .branchItem("main")),
-        .package(url: "https://github.com/my1325/SwiftString.git", .branchItem("main")),
         .package(url: "https://github.com/apple/swift-syntax.git", .branchItem("main")),
     ],
     targets: [
         .target(name: "CodeProtocol"),
         .target(name: "ProcessingFiles", dependencies: [
             "CodeProtocol",
-            "FilePath",
-            "SwiftString"
+            "FilePath"
         ]),
         .target(name: "SwiftFilePlugin", dependencies: [
             "CodeProtocol",
             "ProcessingFiles",
-            "SwiftString",
             "FilePath",
             .product(name: "SwiftSyntax", package: "swift-syntax"),
             .product(name: "SwiftParser", package: "swift-syntax")

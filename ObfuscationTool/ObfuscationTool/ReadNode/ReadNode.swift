@@ -686,8 +686,8 @@ class ReadNode {
         var isDir:ObjCBool = true
         _ = FileManager.default.fileExists(atPath: rootDirectorPath, isDirectory: &isDir)
         let judgeFile:((String?) -> Bool) = { str in
-            return str == "h" || str == "m" || str == "c" || str == "mm"
-//            return str == "swift"
+//            return str == "h" || str == "m" || str == "c" || str == "mm"
+            return str == "swift"
         }
         
         if !isDir.boolValue {
@@ -944,19 +944,19 @@ class ReadNode {
             deletNote(filePathStr: filePathStr)
         }
 
-//        var fileNodes:[FileNode] = []
-//        for filePathStr in filePathStrs {
-//            fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
-//        }
-//
-//        for fileNode in fileNodes {
-//            let newCode:String = fileNode.getString(addRubbish: false)
-//            let filePath = FilePath.file(file: fileNode.filePath)
-//            try? FileManager.default.removeItem(atPath: fileNode.filePath)
-//            if let data = newCode.data(using: .utf8) {
-//                try? filePath.writeData(data)
-//            }
-//        }
+        var fileNodes:[FileNode] = []
+        for filePathStr in filePathStrs {
+            fileNodes.append(contentsOf: getNodes(filePath: filePathStr))
+        }
+
+        for fileNode in fileNodes {
+            let newCode:String = fileNode.getString(addRubbish: false)
+            let filePath = FilePath.file(file: fileNode.filePath)
+            try? FileManager.default.removeItem(atPath: fileNode.filePath)
+            if let data = newCode.data(using: .utf8) {
+                try? filePath.writeData(data)
+            }
+        }
         for filePathStr in filePathStrs {
             reductionCustomStr(filePathStr: filePathStr)
         }
