@@ -9,10 +9,15 @@ import Commander
 import FilePath
 
 //let currentWorkSpace = DirectoryPath(path: "/Users/my/Desktop/mulitbeam/")
-let currentWorkSpace = DirectoryPath(path: "/Users/mayong/Desktop/wudi/Kawa_Mikko/DHWMultiChatKit")
-//let currentWorkSpace = DirectoryPath(path: "/Users/mayong/Desktop/wudi/Kawa_Mikko/LifeDynamic")
-//let currentWorkSpace = DirectoryPath(path: "/Users/mayong/Desktop/wudi/Kawa_Mikko/BF_LiveKitSwift")
+//let currentWorkSpace = DirectoryPath(path: "/Users/mayong/Desktop/wudi/FstWear/multibeam")
+//let currentWorkSpace = DirectoryPath(path: "/Users/mayong/Desktop/wudi/FstWear/dynamic")
+//let currentWorkSpace = DirectoryPath(path: "/Users/mayong/Desktop/wudi/FstWear/live")
 //let currentWorkSpace = DirectoryPath(path: "/Users/mayong/Desktop/DCR_Main")
+
+//let currentWorkSpace = DirectoryPath(path: "/Users/mayong/Desktop/wudi/Lottie/Lottie/Lottie/LiveAbout")
+
+let currentWorkSpace = DirectoryPath(path: "/Users/mayong/Desktop/wudi/Danrt/Danrt/")
+
 
 private let YESEnum = ["yes", "Yes", "YES", "true", "True", "TRUE"]
 private let NOEnum = ["no", "No", "NO", "false", "False", "FALSE"]

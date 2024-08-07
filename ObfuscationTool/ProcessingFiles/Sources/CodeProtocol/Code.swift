@@ -18,12 +18,12 @@ public struct CodeRawWord: CodeRawWordProtocol {
     }
 }
 
-extension CodeRawWordProtocol {
-    public func asWord() -> CodeRawWord {
+public extension CodeRawWordProtocol {
+    func asWord() -> CodeRawWord {
         CodeRawWord(identifier: identifier, content: content)
     }
     
-    public func newWord(_ content: String) -> CodeRawWordProtocol {
+    func newWord(_ content: String) -> CodeRawWordProtocol {
         CodeRawWord(identifier: identifier, content: content)
     }
 }
@@ -57,11 +57,12 @@ public struct CodeContainer: CodeContainerProtocol {
     
     public let rawName: String
     
-    public init(type: CodeContainerType,
-                entireDeclareWord: [CodeRawWordProtocol],
-                code: [CodeRawProtocol],
-                rawName: String)
-    {
+    public init(
+        type: CodeContainerType,
+        entireDeclareWord: [CodeRawWordProtocol],
+        code: [CodeRawProtocol],
+        rawName: String
+    ) {
         self.type = type
         self.entireDeclareWord = entireDeclareWord
         self.code = code
@@ -70,20 +71,28 @@ public struct CodeContainer: CodeContainerProtocol {
 }
 
 public struct CodeMapLazyContainer {
-    
     let codeContainer: CodeContainerProtocol
     let block: (CodeRawProtocol) -> CodeRawProtocol
-    init(codeContainer: CodeContainerProtocol, block: @escaping (CodeRawProtocol) -> CodeRawProtocol) {
+    init(
+        codeContainer: CodeContainerProtocol,
+        block: @escaping (CodeRawProtocol) -> CodeRawProtocol
+    ) {
         self.codeContainer = codeContainer
         self.block = block
     }
     
-    init(other: CodeMapLazyContainer, block: @escaping (CodeRawProtocol) -> CodeRawProtocol) {
+    init(
+        other: CodeMapLazyContainer,
+        block: @escaping (CodeRawProtocol) -> CodeRawProtocol
+    ) {
         self.codeContainer = other.codeContainer
         self.block = { block(other.block($0)) }
     }
         
-    public func mapCode(_ type: [CodeType] = [], block: @escaping (CodeProtocol) -> CodeProtocol) -> CodeMapLazyContainer {
+    public func mapCode(
+        _ type: [CodeType] = [],
+        block: @escaping (CodeProtocol) -> CodeProtocol
+    ) -> CodeMapLazyContainer {
         CodeMapLazyContainer(other: self, block: {
             if let code = $0 as? CodeProtocol, type.isEmpty || type.contains(code.type) {
                 return block(code)
@@ -92,7 +101,10 @@ public struct CodeMapLazyContainer {
         })
     }
     
-    public func mapCodeContainer(_ type: [CodeContainerType] = [], block: @escaping (CodeContainerProtocol) -> CodeContainerProtocol) -> CodeMapLazyContainer {
+    public func mapCodeContainer(
+        _ type: [CodeContainerType] = [],
+        block: @escaping (CodeContainerProtocol) -> CodeContainerProtocol
+    ) -> CodeMapLazyContainer {
         CodeMapLazyContainer(other: self, block: {
             if let code = $0 as? CodeContainerProtocol, type.isEmpty || type.contains(code.type) {
                 return block(code)
@@ -107,12 +119,14 @@ public struct CodeMapLazyContainer {
 }
 
 public extension CodeContainerProtocol {
-    
     func asCodeContainer() -> CodeContainer {
         CodeContainer(type: type, entireDeclareWord: entireDeclareWord, code: code, rawName: rawName)
     }
     
-    func newCode(_ newCode: [CodeRawProtocol], newDeclareWord: [CodeRawWordProtocol]) -> CodeContainer {
+    func newCode(
+        _ newCode: [CodeRawProtocol],
+        newDeclareWord: [CodeRawWordProtocol]
+    ) -> CodeContainer {
         CodeContainer(type: type, entireDeclareWord: newDeclareWord, code: newCode, rawName: rawName)
     }
     
@@ -120,7 +134,10 @@ public extension CodeContainerProtocol {
         newCode(code.map(block), newDeclareWord: entireDeclareWord)
     }
     
-    func mapCode(_ type: [CodeType] = [], block: @escaping (CodeProtocol) -> CodeProtocol) -> CodeMapLazyContainer {
+    func mapCode(
+        _ type: [CodeType] = [],
+        block: @escaping (CodeProtocol) -> CodeProtocol
+    ) -> CodeMapLazyContainer {
         CodeMapLazyContainer(codeContainer: self, block: {
             if let code = $0 as? CodeProtocol, type.isEmpty || type.contains(code.type) {
                 return block(code)
@@ -129,7 +146,10 @@ public extension CodeContainerProtocol {
         })
     }
     
-    func mapCodeContainer(_ type: [CodeContainerType] = [], block: @escaping (CodeContainerProtocol) -> CodeContainerProtocol) -> CodeMapLazyContainer {
+    func mapCodeContainer(
+        _ type: [CodeContainerType] = [],
+        block: @escaping (CodeContainerProtocol) -> CodeContainerProtocol
+    ) -> CodeMapLazyContainer {
         CodeMapLazyContainer(codeContainer: self, block: {
             if let code = $0 as? CodeContainerProtocol, type.isEmpty || type.contains(code.type) {
                 return block(code)
