@@ -5,8 +5,8 @@
 //  Created by mayong on 2023/9/27.
 //
 
-import FilePath
 import Foundation
+import PathKit
 import Plugins
 import ProcessingFiles
 import SwiftFilePlugin
@@ -16,161 +16,117 @@ internal final class Obfuscation {
     init(config: ObfuscationConfig) {
         self.config = config
     }
+        
+    var input: Path {
+        Path.current + (config.input ?? "")
+    }
     
-    var git: ObfuscationGit? { config.git }
+    var output: Path {
+        if let output = config.output, !output.isEmpty {
+            return Path.current + output
+        }
+        return input
+    }
     
-    var input: String? { config.path }
-    
-    var output: String? { config.output }
+    var keepDirectory: Bool {
+        config.keepDirectory ?? false
+    }
         
     func run() throws {
-        let outputDirection = try checkOutput()
-       
-        if let input {
-            let inputPath: PathProtocol
-            if input.starts(with: "/") {
-                inputPath = DirectoryPath(path: input)
-            } else {
-                inputPath = currentWorkSpace.appendConponent(input)
-            }
-            try checkPath(inputPath, output: outputDirection)
+        let input = input
+        
+        if !input.exists {
+            throw ObfuscationError.inputNotExists(input.string)
         }
+        
+        try run(input)
     }
     
-    private func checkGit() {}
-    
-    private func checkPath(_ filePath: PathProtocol, output: DirectoryPathProtocol) throws {
-        let replaceConfig = config.replace ?? .default
-        let prefixConfig = config.prefix ?? .default
-        let zips = config.zips ?? []
-        
-        var plugins: [SwiftFileProcessingHandlePluginProtocol] = []
-        
-        if let map = replaceConfig.map {
-            typealias HandleMode = FileStringHandlePlugin.HandleMode
-            let handleMode: [HandleMode] = map.map { .replace(originString: $0.key, replaceString: $0.value) }
-            let prefixPlugin = FileStringHandlePlugin(handleMode)
-            plugins.append(prefixPlugin)
+    private func checkOutput() throws -> Path {
+        let outputPath = output
+        guard outputPath.isDirectory else {
+            throw ObfuscationError.outputIsNotValid(outputPath.string)
         }
-        
-        if let prefixString = prefixConfig.prefix {
-            typealias HandleMode = FileStringHandlePlugin.HandleMode
-            let shouldAdd = prefixConfig.shouldAdd ?? false
-            let separator = prefixConfig.separator?.first ?? "-"
-            let prefixMode: HandleMode.PrefixMode = shouldAdd ? .addOrReplace : .replace
-            let handleMode: [HandleMode] = [.prefix(mode: prefixMode, prefix: prefixString, separator: separator)]
-            let prefixPlugin = FileStringHandlePlugin(handleMode, codeType: [.property, .func], codeContainerType: [.none])
-            plugins.append(prefixPlugin)
-        }
-        
-        if let shuffle = config.shuffule {
-            let shufflePlugin = FileShuffleHandlePlugin(order: shuffle.order ?? false)
-            plugins.append(shufflePlugin)
-        }
-        
-        let resourcePlugin = ResourceProcessingPlugin(destination: try getAssetsDirectory(output),
-                                                      replaceConfig: replaceConfig,
-                                                      prefixConfig: prefixConfig,
-                                                      zips: zips)
-        
-        let processingManager = ProcessingManager(path: filePath)
-        processingManager.registerPlugin(SwiftFileProcessingPlugin(plugins: plugins), forFileType: .swift)
-        processingManager.registerPlugin(resourcePlugin, forFileType: .image)
-        processingManager.registerPlugin(resourcePlugin, forFileType: .bundle)
-        processingManager.registerPlugin(resourcePlugin, forFileType: .assets)
-        processingManager.registerPlugin(resourcePlugin, forFileType: .zip)
-        processingManager.registerPlugin(resourcePlugin, forFileType: .lproj)
-        processingManager.registerPlugin(resourcePlugin, forFileType: .font)
-        processingManager.registerPlugin(resourcePlugin, forFileType: .svga)
-        processingManager.registerPlugin(resourcePlugin, forFileType: .other)
-        processingManager.delegate = self
-        let files = try processingManager.processing()
-        try completedProcessing(files, output: output)
-    }
-    
-    private func completedProcessing(_ files: [ProcessingFile], output: DirectoryPathProtocol) throws {
-        let codeDirectory = try getCodeDirectory(output)
-        for file in files {
-            if file.fileType.isCode {
-                try saveFileAtOutput(file, output: codeDirectory)
-            }
-        }
-    }
-    
-    private func saveFileAtOutput(_ file: ProcessingFile, output: DirectoryPathProtocol) throws {
-        let codeString = try file.getContent()
-        if let codeData = codeString.data(using: .utf8) {
-            let filename = getFilename(file.filePath.lastPathConponent)
-            let newFilePath = output.appendFileName(filename)
-            try newFilePath.writeData(codeData)
-        } else {
-            throw ObfuscationError.codeCannotWrite(codeString)
-        }
-    }
-    
-    private func checkOutput() throws -> DirectoryPathProtocol {
-        guard let output, !output.isEmpty else { throw ObfuscationError.outputEmpty }
-        var outputPath: DirectoryPathProtocol = currentWorkSpace
-        if output.starts(with: "/") {
-            outputPath = DirectoryPath(path: output)
-        } else {
-            outputPath = currentWorkSpace.appendConponent(output)
-        }
-        
-        if outputPath.isFile {
-            throw ObfuscationError.outputIsFile(outputPath.path)
-        }
-        
-        try outputPath.createIfNotExists()
+           
+        try outputPath.mkpath()
         return outputPath
     }
     
-    private func getCodeDirectory(_ parent: DirectoryPathProtocol) throws -> DirectoryPathProtocol {
-        let codeDirectory = parent.appendConponent("code")
-        try codeDirectory.createIfNotExists()
-        return codeDirectory
+    private func shuffulePlugin(_ config: ObfuscationShuffule) -> SwiftFileProcessingHandlePluginProtocol {
+        FileShuffleHandlePlugin(order: config.order ?? false)
     }
     
-    private func getAssetsDirectory(_ parent: DirectoryPathProtocol) throws -> DirectoryPathProtocol {
-        let assetDirectory = parent.appendConponent("assets")
-        try assetDirectory.createIfNotExists()
-        return assetDirectory
+    private func replacePlugin(_ config: ObfuscationReplace) -> SwiftFileProcessingHandlePluginProtocol {
+        let modes: [FileStringHandlePlugin.HandleMode] = config.map?
+            .map {
+                .replace(
+                    prefixOnly: config.onlyPrefix ?? false,
+                    originString: $0.key,
+                    replaceString: $0.value
+                )
+            } ?? []
+        return FileStringHandlePlugin(modes)
     }
     
-    private func getFilename(_ origin: String) -> String {
-        var retName = origin
-        if retName.hasPrefix("/") {
-            retName.removeFirst()
+    private func swiftFilePlugins() -> SwiftFileProcessingPlugin {
+        var plugins: [SwiftFileProcessingHandlePluginProtocol] = []
+        
+        if let replaceConfig = config.replace {
+            plugins.append(replacePlugin(replaceConfig))
         }
         
-        var handleFile = config.replace?.handleFile ?? true
-        if handleFile, let replace = config.replace { retName = replace.getName(retName) }
+        if let shuffle = config.shuffule {
+            plugins.append(shuffulePlugin(shuffle))
+        }
         
-        handleFile = config.prefix?.handleFile ?? true
-        if handleFile, let prefix = config.prefix { retName = prefix.getName(retName) }
-        return retName
+        return SwiftFileProcessingPlugin(plugins: plugins)
+    }
+        
+    private func run(_ filePath: Path) throws {
+        
+        let processingManager = ProcessingManager(path: filePath)
+        processingManager.registerPlugin(swiftFilePlugins(), forFileType: .swift)
+        if let replace = config.replace {
+            processingManager.registerPlugin(NameReplacePlugin(replace), forFileType: .all)
+        }
+        processingManager.delegate = self
+        
+        let files = try processingManager.processing()
+        
+        for file in files {
+            try saveFile(file, in: getOutputPath(file))
+        }
+    }
+    
+    private func getOutputPath(_ file: ProcessingFile) throws -> Path {
+        guard keepDirectory else { return output }
+        let originPath = file.output.string
+        let index = originPath.index(originPath.startIndex, offsetBy: input.string.count)
+        let fileRelativePath = originPath.suffix(from: index)
+        return Path(output.string + String(fileRelativePath))
+            .parent()
+    }
+    
+    private func saveFile(_ file: ProcessingFile, in path: Path) throws {
+        let newPath = path + file.output.lastComponent
+        try newPath.parent().mkpath()
+        
+        if file.filePath != newPath, newPath.exists {
+            try newPath.delete()
+        }
+        
+        if file.canGetContent {
+            try newPath.write(file.getContent())
+        } else if file.filePath != newPath {
+            try file.filePath.copy(newPath)
+        } else {
+            /// nothing
+        }
     }
 }
 
 extension Obfuscation: ProcessingManagerDelegate {
-    func processingManager(_ manager: ProcessingManager, willProcessing file: PathProtocol) {
-        let fileType = FileType(ext: file.pathExtension)
-        guard !isHandledFile(fileType) else { return }
-        
-        do {
-            let output = try checkOutput()
-            let fileName = getFilename(file.lastPathConponent)
-            let newPath: FilePathProtocol
-            if fileType.isCode {
-                newPath = try getCodeDirectory(output).appendFileName(fileName)
-            } else {
-                newPath = try getAssetsDirectory(output).appendFileName(fileName)
-            }
-            try file.copyToPath(newPath)
-        } catch {
-            print(error)
-        }
-    }
+    func processingManager(_ manager: ProcessingManager, willProcessing file: Path) {}
     
     private func isHandledFile(_ fileType: FileType) -> Bool {
         switch fileType {

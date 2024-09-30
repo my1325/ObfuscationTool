@@ -6,10 +6,10 @@
 //
 
 import Foundation
-import FilePath
+import PathKit
 
 public enum ProcessingError: Error {
-    case fileReadError(PathProtocol)
+    case fileReadError(Path)
     case notPluginForFileType(FileType)
     case underlying(Error)
 }

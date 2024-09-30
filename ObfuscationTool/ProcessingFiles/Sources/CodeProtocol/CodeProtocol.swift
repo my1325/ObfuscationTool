@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct CodeOrder: Comparable {
+public struct CodeOrder: Comparable, Hashable {
     let order: UInt
     
     public init(order: UInt) {
@@ -62,11 +62,12 @@ public enum CodeContainerType {
     case `extension`
     case `protocol`
     case block
+    case `operator`
     case none
     
     public var order: CodeOrder {
         switch self {
-        case .none: return .top
+        case .none, .operator: return .top
         case .protocol: return .topMost
         case .enum, .struct, .block: return .top
         case .class: return .middle

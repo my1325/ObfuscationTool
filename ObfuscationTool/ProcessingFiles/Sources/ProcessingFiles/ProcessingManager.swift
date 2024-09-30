@@ -6,43 +6,73 @@
 //
 
 import CodeProtocol
-import FilePath
 import Foundation
+import PathKit
+
+extension Path {
+    var isBundle: Bool {
+        self.extension == "bundle"
+    }
+    
+    var isZip: Bool {
+        self.extension == "zip"
+    }
+
+    var isAssets: Bool {
+        self.extension == "xcassets"
+    }
+    
+    var fileType: FileType? {
+        guard let `extension` else { return nil }
+        return .init(ext: `extension`)
+    }
+}
 
 public protocol ProcessingFilePlugin {
-    func processingManager(_ manager: ProcessingManager, processedFile file: FilePathProtocol) throws -> [CodeRawProtocol]
+    func processingManager(
+        _ manager: ProcessingManager,
+        processedFile file: Path
+    ) throws -> [CodeRawProtocol]
     
-    func processingManager(_ manager: ProcessingManager, didProcessedFile file: ProcessingFile) throws -> ProcessingFile
+    func processingManager(
+        _ manager: ProcessingManager,
+        didProcessedFile file: ProcessingFile
+    ) throws -> ProcessingFile
     
-    func processingManager(_ manager: ProcessingManager, processedDirectoryOrFile path: PathProtocol) throws -> ProcessingFile
-
-    func processingManager(_ manager: ProcessingManager, completedProcessFile files: [ProcessingFile]) throws -> [ProcessingFile]
+    func processingManager(
+        _ manager: ProcessingManager,
+        completedProcessFile files: [ProcessingFile]
+    ) throws -> [ProcessingFile]
 }
 
 public extension ProcessingFilePlugin {
-    func processingManager(_ manager: ProcessingManager, processedDirectoryOrFile path: PathProtocol) throws -> ProcessingFile {
-        ProcessingFile(filePath: path, fileType: .init(ext: path.pathExtension))
-    }
-
-    func processingManager(_ manager: ProcessingManager, processedFile file: FilePathProtocol) throws -> [CodeRawProtocol] {
+    func processingManager(
+        _ manager: ProcessingManager,
+        processedFile file: Path
+    ) throws -> [CodeRawProtocol] {
         []
     }
 
-    func processingManager(_ manager: ProcessingManager, completedProcessFile files: [ProcessingFile]) throws -> [ProcessingFile] {
+    func processingManager(
+        _ manager: ProcessingManager,
+        completedProcessFile files: [ProcessingFile]
+    ) throws -> [ProcessingFile] {
         []
     }
 }
 
 public protocol ProcessingManagerDelegate: AnyObject {
-    func processingManager(_ manager: ProcessingManager, willProcessing file: PathProtocol)
+    func processingManager(
+        _ manager: ProcessingManager,
+        willProcessing file: Path
+    )
 }
 
 public final class ProcessingManager {
-    
     public weak var delegate: ProcessingManagerDelegate?
         
-    public let path: PathProtocol
-    public init(path: PathProtocol) {
+    public let path: Path
+    public init(path: Path) {
         self.path = path
     }
     
@@ -60,73 +90,74 @@ public final class ProcessingManager {
     }
     
     public func processing() throws -> [ProcessingFile] {
-        guard path.isExists else { return [] }
+        guard path.exists else { return [] }
         var retFiles: [FileType: [ProcessingFile]] = [:]
         if path.isFile {
-            if let processedFile = processingFile(path as! FilePath) {
-                retFiles = [processedFile.fileType: [processedFile]]
-            }
+            retFiles = [path.fileType ?? .other: [try processingFile(path)]]
         } else {
-            retFiles = try processingDirectory(path as! DirectoryPath)
+            retFiles = try processingDirectory(path)
         }
-        return try retFiles
+        
+        let files = try retFiles
             .map {
-                if let plugin = self.pluginCache[$0.key] {
-                    return try plugin.processingManager(self, completedProcessFile: $0.value)
-                }
-                return $0.value
+                try pluginsForType($0.key)?
+                    .processingManager(self, completedProcessFile: $0.value) ?? $0.value
             }
             .flatMap { $0 }
+        
+        return try pluginsForType(.all)?
+            .processingManager(self, completedProcessFile: files) ?? files
+    }
+    
+    public func pluginsForType(_ fileType: FileType) -> ProcessingFilePlugin? {
+        pluginCache[fileType]
     }
 }
 
 // MARK: - Private
 
 extension ProcessingManager {
-    private func processingFile(_ filePath: FilePath) -> ProcessingFile? {
+    private func processingFile(_ filePath: Path) throws -> ProcessingFile {
         delegate?.processingManager(self, willProcessing: filePath)
-        let fileType = FileType(ext: filePath.pathExtension)
-        do {
-            if let handlePlugin = pluginCache[fileType] {
-                switch fileType {
-                case .swift, .header, .implemention:
-                    let codes = try handlePlugin.processingManager(self, processedFile: filePath)
-                    let file = ProcessingFile(filePath: filePath, fileType: fileType)
-                    file.setCodes(codes)
-                    let newFile = try handlePlugin.processingManager(self, didProcessedFile: file)
-                    return newFile
-                default:
-                    let file = try handlePlugin.processingManager(self, processedDirectoryOrFile: filePath)
-                    return file
-                }
-            }
-            return nil
-        } catch {
-            return nil
-        }
+        
+        let fileType = filePath.fileType ?? .other
+        let file = ProcessingFile(filePath: filePath, fileType: fileType)
+        
+        let plugin = pluginsForType(fileType)
+        
+        let codes: [CodeRawProtocol] = try plugin?.processingManager(self, processedFile: filePath) ?? []
+        
+        file.setCodes(codes)
+        
+        return try plugin?.processingManager(self, didProcessedFile: file) ?? file
     }
     
-    private func processingDirectory(_ direcotryPath: DirectoryPath) throws -> [FileType: [ProcessingFile]] {
-        var processedFiles: [FileType: [ProcessingFile]] = [:]
+    private func processingDirectory(_ direcotryPath: Path) throws -> [FileType: [ProcessingFile]] {
         delegate?.processingManager(self, willProcessing: direcotryPath)
-        if direcotryPath.isBundle || direcotryPath.isAssets || direcotryPath.pathExtension == "lproj",
-           let plugin = pluginCache[.init(ext: direcotryPath.pathExtension)]
+        
+        if let fileType = direcotryPath.fileType,
+           let plugin = pluginsForType(fileType)
         {
-            let file = try plugin.processingManager(self, processedDirectoryOrFile: direcotryPath)
-            let fileType = FileType(ext: path.pathExtension)
-            processedFiles[fileType] = [file]
-        } else {
-            for path in direcotryPath.directoryIterator() {
-                if path.isFile {
-                    if let processedFile = processingFile(path as! FilePath) {
-                        let type = processedFile.fileType
-                        var files = processedFiles[type] ?? []
-                        files.append(processedFile)
-                        processedFiles[type] = files
-                    }
-                } else {
-                    processedFiles.merge(try processingDirectory(path as! DirectoryPath), uniquingKeysWith: { $0 + $1 })
-                }
+            var file = ProcessingFile(filePath: direcotryPath, fileType: fileType)
+            file = try plugin.processingManager(self, didProcessedFile: file)
+            
+            return [fileType: [file]]
+        }
+        
+        var processedFiles: [FileType: [ProcessingFile]] = [:]
+        
+        for path in direcotryPath {
+            if !path.isFile {
+                processedFiles.merge(
+                    try processingDirectory(path),
+                    uniquingKeysWith: { $0 + $1 }
+                )
+            } else {
+                let processedFile = try processingFile(path)
+                let type = processedFile.fileType
+                var files = processedFiles[type] ?? []
+                files.append(processedFile)
+                processedFiles[type] = files
             }
         }
         return processedFiles

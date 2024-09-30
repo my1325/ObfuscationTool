@@ -6,7 +6,7 @@
 //
 
 import CodeProtocol
-import FilePath
+import PathKit
 import Foundation
 
 public enum FileType {
@@ -34,6 +34,8 @@ public enum FileType {
     case lproj
     /// other
     case other
+    
+    case all
 
     public init(ext: String) {
         switch ext {
@@ -60,19 +62,26 @@ public enum FileType {
 }
 
 public final class ProcessingFile {
-    public let filePath: PathProtocol
+    public let filePath: Path
     public let fileType: FileType
-    public init(filePath: PathProtocol, fileType: FileType) {
+    public private(set) var output: Path
+    
+    public var canGetContent: Bool {
+        switch fileType {
+        case .swift, .header, .implemention: true
+        default: false
+        }
+    }
+    
+    public init(filePath: Path, fileType: FileType) {
         self.filePath = filePath
         self.fileType = fileType
+        self.output = filePath
     }
 
     public func getContent() throws -> String {
         guard !codes.isEmpty else {
-            if let path = filePath as? FilePathProtocol {
-                return try path.readLines().joined()
-            }
-            return filePath.path
+            return try filePath.read()
         }
         return codes.map(\.content).joined()
     }
@@ -80,6 +89,14 @@ public final class ProcessingFile {
     public private(set) var codes: [CodeRawProtocol] = []
     public func setCodes(_ codes: [CodeRawProtocol]) {
         self.codes = codes
+    }
+    
+    public func newPath(_ path: Path) {
+        output = path
+    }
+    
+    public func rename(_ name: String) {
+        newPath(filePath.parent() + name)
     }
 
     public func lines(_ trimWhiteSpaceLine: Bool = false) throws -> Int {
@@ -108,8 +125,8 @@ public final class ProcessingFile {
     }
     
     public func writeToFile(_ encoding: String.Encoding = .utf8) throws {
-        if let path = filePath as? FilePathProtocol, let data = try getContent().data(using: encoding) {
-            try path.writeData(data)
+        if let data = try getContent().data(using: encoding) {
+            try filePath.write(data)
         }
     }
 }

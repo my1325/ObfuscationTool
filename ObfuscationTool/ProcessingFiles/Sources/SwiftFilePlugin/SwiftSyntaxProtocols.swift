@@ -86,6 +86,7 @@ extension CustomCodeContainerSyntaxProtocol {
         case is EnumDeclSyntax: return .enum
         case is ProtocolDeclSyntax: return .protocol
         case is ExtensionDeclSyntax: return .extension
+        case is OperatorDeclSyntax: return .operator
         default: return .block
         }
     }
@@ -123,6 +124,7 @@ extension StructDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProt
 extension ProtocolDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
 extension EnumDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
 extension ExtensionDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
+extension OperatorDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
 
 // MARK: - -
 
@@ -204,6 +206,8 @@ extension SyntaxProtocol {
         } else if let node = self as? ProtocolDeclSyntax {
             return CodeContainerSyntax(syntaxNode: node)
         } else if let node = self as? ExtensionDeclSyntax {
+            return CodeContainerSyntax(syntaxNode: node)
+        } else if let node = self as? OperatorDeclSyntax {
             return CodeContainerSyntax(syntaxNode: node)
         } else if let node = self as? FunctionDeclSyntax {
             return CodeSyntax(syntaxNode: node)

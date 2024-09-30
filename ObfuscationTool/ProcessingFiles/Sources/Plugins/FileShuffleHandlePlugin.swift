@@ -17,28 +17,30 @@ open class FileShuffleHandlePlugin: SwiftFileProcessingHandlePluginProtocol {
         self.order = order
     }
     
-    public func processingPlugin(_ plugin: SwiftFileProcessingPlugin, didProcessedFiles file: ProcessingFile) -> ProcessingFile {
+    public func processingPlugin(
+        _ plugin: SwiftFileProcessingPlugin,
+        didProcessedFiles file: ProcessingFile
+    ) -> ProcessingFile {
         shuffledFile(file)
     }
     
-    public func processingPlugin(_ plugin: SwiftFileProcessingPlugin, didCompleteProcessedFiles files: [ProcessingFile]) -> [ProcessingFile] {
+    public func processingPlugin(
+        _ plugin: SwiftFileProcessingPlugin,
+        didCompleteProcessedFiles files: [ProcessingFile]
+    ) -> [ProcessingFile] {
         files
     }
     
     func shuffledFile(_ file: ProcessingFile) -> ProcessingFile {
-        var codes = file.codes.map(shuffledCode)
-        if order {
-            codes = groupeCode(codes.sorted(by: { $0.order < $1.order }))
-                .map({ $0.shuffled() })
-                .flatMap({ $0 })
-        } else {
-            codes = codes.shuffled()
-        }
-        return file.newFileWithCode(codes)
+        file.newFileWithCode(
+            shuffled(file.codes.map(shuffledCode))
+        )
     }
     
     func shuffledCode(_ code: CodeRawProtocol) -> CodeRawProtocol {
-        if let codeContainer = code as? CodeContainerProtocol, codeContainer.type != .struct {
+        if let codeContainer = code as? CodeContainerProtocol, 
+            codeContainer.type != .struct
+        {
             return shuffledCodeContaier(codeContainer)
         }
         return code
@@ -49,44 +51,40 @@ open class FileShuffleHandlePlugin: SwiftFileProcessingHandlePluginProtocol {
             .mapCodeContainer(block: shuffledCodeContaier)
             .asCodeContainer()
         
-        let enumCaseCondition: (CodeRawProtocol) -> Bool = {
-            if let code = $0 as? CodeProtocol {
-                return code.type == .enumCase
+        let enumCaseFilter: (inout [CodeRawProtocol]) -> [CodeRawProtocol] = {
+            let enumCaseCodes = $0.compactMap { $0.asCode(.enumCase) }
+            $0.removeAll {
+                if let code = $0 as? CodeProtocol {
+                    return code.type == .enumCase
+                }
+                return false
             }
-            return false
+            return enumCaseCodes
         }
         
         var codes = codeContainer.code
-        let enumCaseCode = codes.filter(enumCaseCondition)
-        codes.removeAll(where: enumCaseCondition)
+        let enumCaseCode = enumCaseFilter(&codes)
         
-        var newCode: [CodeRawProtocol] = codes
+        return newCodeContainer.newCode(
+            shuffled(codes) + enumCaseCode,
+            newDeclareWord: newCodeContainer.entireDeclareWord
+        )
+    }
+    
+    func shuffled(_ codes: [CodeRawProtocol]) -> [CodeRawProtocol] {
         if order {
-            newCode = groupeCode(newCode.sorted(by: { $0.order < $1.order }))
+            return groupCode(codes)
                 .map({ $0.shuffled() })
                 .flatMap({ $0 })
         } else {
-            newCode = newCode.shuffled()
+            return codes.shuffled()
         }
-        newCode += enumCaseCode
-        return newCodeContainer.newCode(newCode, newDeclareWord: newCodeContainer.entireDeclareWord)
     }
     
-    func groupeCode(_ code: [CodeRawProtocol]) -> [[CodeRawProtocol]] {
-        var retValue: [[CodeRawProtocol]] = Array<[CodeRawProtocol]>(repeating: [], count: code.count)
-        var length = 0
-        for e in code {
-            var i = 0
-            while i < length {
-                let subValue = retValue[i]
-                if e.order == subValue[0].order { break }
-                i += 1
-            }
-            var subValue = retValue[i]
-            subValue.append(e)
-            retValue[i] = subValue
-            if i == length { length += 1 }
-        }
-        return retValue.prefix(upTo: length).map({ $0 })
+    func groupCode(_ code: [CodeRawProtocol]) -> [[CodeRawProtocol]] {
+        Dictionary(grouping: code, by: \.order)
+            .map { ($0, $1) }
+            .sorted(by: { $0.0 < $1.0 })
+            .map(\.1)
     }
 }

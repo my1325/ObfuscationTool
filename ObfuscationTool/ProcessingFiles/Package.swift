@@ -10,19 +10,19 @@ let package = Package(
         .library(name: "ProcessingFiles", targets: ["ProcessingFiles", "SwiftFilePlugin", "CodeProtocol", "Plugins"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/my1325/FilePath.git", .branchItem("main")),
+        .package(url: "https://github.com/kylef/PathKit.git", .upToNextMajor(from: "1.0.1")),
         .package(url: "https://github.com/apple/swift-syntax.git", .branchItem("main")),
     ],
     targets: [
         .target(name: "CodeProtocol"),
         .target(name: "ProcessingFiles", dependencies: [
             "CodeProtocol",
-            "FilePath",
+            "PathKit",
         ]),
         .target(name: "SwiftFilePlugin", dependencies: [
             "CodeProtocol",
             "ProcessingFiles",
-            "FilePath",
+            "PathKit",
             .product(name: "SwiftSyntax", package: "swift-syntax"),
             .product(name: "SwiftParser", package: "swift-syntax")
         ]),
@@ -30,7 +30,7 @@ let package = Package(
             "CodeProtocol",
             "ProcessingFiles",
             "SwiftFilePlugin",
-            "FilePath",
+            "PathKit",
         ])
     ]
 )

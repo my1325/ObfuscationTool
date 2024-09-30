@@ -25,14 +25,16 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
         case variable
         case enumCase
         case `associatedtype`
+        case `operator`
     }
     
     public let supportSyntaxDecls: [SupportSyntaxDecl]
     public let syntaxNode: SyntaxProtocol
-    public init(_ viewMode: SyntaxTreeViewMode = .sourceAccurate,
-                supportSyntaxDecls: [SupportSyntaxDecl] = [],
-                syntaxNode: SyntaxProtocol)
-    {
+    public init(
+        _ viewMode: SyntaxTreeViewMode = .sourceAccurate,
+        supportSyntaxDecls: [SupportSyntaxDecl] = [],
+        syntaxNode: SyntaxProtocol
+    ) {
         self.supportSyntaxDecls = supportSyntaxDecls
         self.syntaxNode = syntaxNode
         super.init(viewMode: viewMode)
@@ -47,7 +49,10 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
     }
     
     @discardableResult
-    private func appnedNode(_ node: SyntaxProtocol, supportType: SupportSyntaxDecl) -> SyntaxVisitorContinueKind {
+    private func appnedNode(
+        _ node: SyntaxProtocol,
+        supportType: SupportSyntaxDecl
+    ) -> SyntaxVisitorContinueKind {
         guard node._syntaxNode != syntaxNode._syntaxNode,
               supportSyntaxDecls.isEmpty || supportSyntaxDecls.contains(supportType)
         else {
@@ -101,19 +106,23 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
         appnedNode(node, supportType: .enumCase)
     }
     
-    public override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+    override public func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         appnedNode(node, supportType: .`init`)
     }
     
-    public override func visit(_ node: DeinitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+    override public func visit(_ node: DeinitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         appnedNode(node, supportType: .deinit)
     }
     
-    public override func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
+    override public func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
         appnedNode(node, supportType: .subscript)
     }
     
-    public override func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
+    override public func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
         appnedNode(node, supportType: .associatedtype)
+    }
+    
+    public override func visit(_ node: OperatorDeclSyntax) -> SyntaxVisitorContinueKind {
+        appnedNode(node, supportType: .operator)
     }
 }

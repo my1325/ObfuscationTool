@@ -6,67 +6,33 @@
 //
 
 import Foundation
+import PathKit
 
-enum TemplateType {
-    case live
-    case mulitbeam
-    case dynamic
-    
-    init(rawValue: String) throws {
-        switch rawValue {
-        case "live": self = .live
-        case "mulitbeam": self = .mulitbeam
-        case "dynamic": self = .dynamic
-        default: throw ObfuscationError.unknownTemplateError(rawValue)
-        }
+struct TemplateType {
+    let filePath: Path
+
+    init(_ path: Path) {
+        filePath = path
     }
-    
-    var yamlLiveTemplate: String {
-    """
-    git:
-        url: http://gitlab.wudi360.com/liqinglian/livekitswift.git
-        tag: 1.1.0
-    #    branch: dev
-    #path: BF_LiveKitSwift/
-    replace:
-        map:
-            BF_: FB_
-            bf_: fb_
-        handle_file: true
-    #prefix:
-        #prefix: bf
-        #separator: '-'
-        #handle_file: true
-        #should_add: false
-    shuffule:
-        order: true
-    images:
-        compress: 1
-        md5: true
-    zips:
-       -
-        name: resources.zip
-        password: 123456
-       -
-        name: resources.zip
-        new_password: 123456
-    output: ObfuscationCode/
-    """
-    }
-    
-    var template: String {
-        switch self {
-        case .live: return yamlLiveTemplate
-        case .mulitbeam: return ""
-        case .dynamic: return ""
-        }
-    }
-    
-    var name: String {
-        switch self {
-        case .live: return "live"
-        case .mulitbeam: return "mulitbeam"
-        case .dynamic: return "dynamic"
-        }
+
+    static var yamlLiveTemplate: String {
+        """
+        #path: BF_LiveKitSwift/
+        replace:
+            only_prefix: true
+            map:
+                BF_: FB_
+                bf_: fb_
+        shuffule:
+            order: true
+        zips:
+           -
+            name: resources.zip
+            password: 123456
+           -
+            name: resources.zip
+            new_password: 123456
+        output: ObfuscationCode/
+        """
     }
 }

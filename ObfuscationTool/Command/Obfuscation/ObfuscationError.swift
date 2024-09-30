@@ -14,6 +14,8 @@ enum ObfuscationError: Error, CustomStringConvertible {
     case outputEmpty
     case outputIsFile(String)
     case codeCannotWrite(String)
+    case outputIsNotValid(String)
+    case inputNotExists(String)
     
     var message: String {
         switch self {
@@ -29,6 +31,10 @@ enum ObfuscationError: Error, CustomStringConvertible {
             return "output is file \(outputFile)"
         case let .codeCannotWrite(code):
             return "code \(code) write error"
+        case let .outputIsNotValid(path):
+            return "output path \(path) is not valid"
+        case let .inputNotExists(path):
+            return "input path \(path) is not exists"
         }
     }
     
