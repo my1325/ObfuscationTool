@@ -72,11 +72,11 @@ import PathKit
 // commandGroup.run()
 
  let config = ObfuscationConfig(
-    replace: .init(["ycat_": "abcd_", "Ycat_": "Abcd_"], onlyPrefix: true),
+    replace: .init(["ycat_": "abcd_", "Ycat_": "Abcd_"], onlyPrefix: false),
     shuffule: .init(order: true),
     zips: nil,
     input: "/Users/mayong/Desktop/Test/Tool",
-    output: "/Users/mayong/Desktop/Test/Output",
+    output: "",
     keepDirectory: true
  )
 

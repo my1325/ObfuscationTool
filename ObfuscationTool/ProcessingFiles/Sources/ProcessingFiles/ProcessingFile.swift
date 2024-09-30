@@ -68,7 +68,7 @@ public final class ProcessingFile {
     
     public var canGetContent: Bool {
         switch fileType {
-        case .swift, .header, .implemention: true
+        case .swift, .header, .implemention, .image: true
         default: false
         }
     }
@@ -84,6 +84,10 @@ public final class ProcessingFile {
             return try filePath.read()
         }
         return codes.map(\.content).joined()
+    }
+    
+    public func getData() throws -> Data {
+        try filePath.read()
     }
 
     public private(set) var codes: [CodeRawProtocol] = []

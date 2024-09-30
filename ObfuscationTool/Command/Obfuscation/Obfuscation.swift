@@ -114,14 +114,8 @@ internal final class Obfuscation {
         if file.filePath != newPath, newPath.exists {
             try newPath.delete()
         }
-        
-        if file.canGetContent {
-            try newPath.write(file.getContent())
-        } else if file.filePath != newPath {
-            try file.filePath.copy(newPath)
-        } else {
-            /// nothing
-        }
+
+        try newPath.write(file.getData())
     }
 }
 
