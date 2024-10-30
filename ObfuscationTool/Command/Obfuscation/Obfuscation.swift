@@ -94,13 +94,16 @@ internal final class Obfuscation {
         let files = try processingManager.processing()
         
         for file in files {
+            guard !file.filePath.lastComponent.starts(with: ".") else {
+                continue
+            }
             try saveFile(file, in: getOutputPath(file))
         }
     }
     
     private func getOutputPath(_ file: ProcessingFile) throws -> Path {
         guard keepDirectory else { return output }
-        let originPath = file.output.string
+        let originPath = file.filePath.string
         let index = originPath.index(originPath.startIndex, offsetBy: input.string.count)
         let fileRelativePath = originPath.suffix(from: index)
         return Path(output.string + String(fileRelativePath))
@@ -114,8 +117,16 @@ internal final class Obfuscation {
         if file.filePath != newPath, newPath.exists {
             try newPath.delete()
         }
-
-        try newPath.write(file.getData())
+        
+        if file.fileType.isCode {
+            try newPath.write(file.getContent())
+        } else {
+            try newPath.write(file.getData())
+        }
+        
+        if file.filePath != newPath, file.filePath.exists {
+            try file.filePath.delete()
+        }
     }
 }
 

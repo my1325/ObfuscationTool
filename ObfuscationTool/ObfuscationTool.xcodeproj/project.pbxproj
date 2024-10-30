@@ -7,14 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0FD3DF872ACEC1CD00740948 /* ResourceProcessingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FD3DF862ACEC1CD00740948 /* ResourceProcessingPlugin.swift */; };
 		0FD3DF9A2ACF141B00740948 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 0FD3DF992ACF141B00740948 /* ZipArchive */; };
 		B77B6CFB2AC2821F00F172F3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B77B6CFA2AC2821F00F172F3 /* main.swift */; };
 		B77B6D092AC2894800F172F3 /* ProcessingFiles in Frameworks */ = {isa = PBXBuildFile; productRef = B77B6D082AC2894800F172F3 /* ProcessingFiles */; };
 		B77B6D122AC28C6500F172F3 /* YAMLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B77B6D112AC28C6500F172F3 /* YAMLHandler.swift */; };
 		B77B6D162AC2A7B800F172F3 /* ObfuscationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B77B6D152AC2A7B800F172F3 /* ObfuscationConfig.swift */; };
 		B7C0F1CA2CA9579800FA069C /* PathKit in Frameworks */ = {isa = PBXBuildFile; productRef = B7C0F1C92CA9579800FA069C /* PathKit */; };
-		B7D3D0272AC3CBC000B88A9B /* TemplateType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D3D0262AC3CBC000B88A9B /* TemplateType.swift */; };
+		B7D1EFA52CB523A300C49D1A /* ZipTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D1EFA42CB523A300C49D1A /* ZipTool.swift */; };
+		B7D1EFA72CB5271900C49D1A /* StringsTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D1EFA62CB5271900C49D1A /* StringsTool.swift */; };
+		B7D1EFA92CB529E000C49D1A /* AssetsTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D1EFA82CB529E000C49D1A /* AssetsTool.swift */; };
 		B7D3D0292AC3CBCC00B88A9B /* ObfuscationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D3D0282AC3CBCC00B88A9B /* ObfuscationError.swift */; };
 		B7D3D02B2AC3D9C200B88A9B /* Obfuscation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D3D02A2AC3D9C200B88A9B /* Obfuscation.swift */; };
 		B7D3D0472AC3F5AC00B88A9B /* Commander in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0462AC3F5AC00B88A9B /* Commander */; };
@@ -35,7 +36,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0FD3DF862ACEC1CD00740948 /* ResourceProcessingPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceProcessingPlugin.swift; sourceTree = "<group>"; };
 		0FF5F7792AA39DDA001B432B /* ProcessingFiles */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ProcessingFiles; sourceTree = "<group>"; };
 		B754C3142BAD664700281C1E /* FilePath */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = FilePath; sourceTree = "<group>"; };
 		B77B6CF82AC2821F00F172F3 /* Command */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Command; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -43,7 +43,9 @@
 		B77B6D112AC28C6500F172F3 /* YAMLHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YAMLHandler.swift; sourceTree = "<group>"; };
 		B77B6D142AC2A0B800F172F3 /* obfuscation.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = obfuscation.yml; sourceTree = "<group>"; };
 		B77B6D152AC2A7B800F172F3 /* ObfuscationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObfuscationConfig.swift; sourceTree = "<group>"; };
-		B7D3D0262AC3CBC000B88A9B /* TemplateType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateType.swift; sourceTree = "<group>"; };
+		B7D1EFA42CB523A300C49D1A /* ZipTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipTool.swift; sourceTree = "<group>"; };
+		B7D1EFA62CB5271900C49D1A /* StringsTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringsTool.swift; sourceTree = "<group>"; };
+		B7D1EFA82CB529E000C49D1A /* AssetsTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsTool.swift; sourceTree = "<group>"; };
 		B7D3D0282AC3CBCC00B88A9B /* ObfuscationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObfuscationError.swift; sourceTree = "<group>"; };
 		B7D3D02A2AC3D9C200B88A9B /* Obfuscation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Obfuscation.swift; sourceTree = "<group>"; };
 		B7E12AE02CAA7D6000FD3111 /* NameReplacePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameReplacePlugin.swift; sourceTree = "<group>"; };
@@ -68,7 +70,6 @@
 		0FD3DF8E2ACEC1F000740948 /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
-				0FD3DF862ACEC1CD00740948 /* ResourceProcessingPlugin.swift */,
 				B7E12AE02CAA7D6000FD3111 /* NameReplacePlugin.swift */,
 			);
 			path = Plugins;
@@ -121,10 +122,10 @@
 		B77B6D102AC28C4B00F172F3 /* Obfuscation */ = {
 			isa = PBXGroup;
 			children = (
+				B7D1EFA32CB5239400C49D1A /* Tools */,
 				0FD3DF8E2ACEC1F000740948 /* Plugins */,
 				B77B6D112AC28C6500F172F3 /* YAMLHandler.swift */,
 				B77B6D152AC2A7B800F172F3 /* ObfuscationConfig.swift */,
-				B7D3D0262AC3CBC000B88A9B /* TemplateType.swift */,
 				B7D3D0282AC3CBCC00B88A9B /* ObfuscationError.swift */,
 				B7D3D02A2AC3D9C200B88A9B /* Obfuscation.swift */,
 			);
@@ -137,6 +138,16 @@
 				B77B6D142AC2A0B800F172F3 /* obfuscation.yml */,
 			);
 			path = templates;
+			sourceTree = "<group>";
+		};
+		B7D1EFA32CB5239400C49D1A /* Tools */ = {
+			isa = PBXGroup;
+			children = (
+				B7D1EFA42CB523A300C49D1A /* ZipTool.swift */,
+				B7D1EFA62CB5271900C49D1A /* StringsTool.swift */,
+				B7D1EFA82CB529E000C49D1A /* AssetsTool.swift */,
+			);
+			path = Tools;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -211,14 +222,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7D1EFA52CB523A300C49D1A /* ZipTool.swift in Sources */,
+				B7D1EFA92CB529E000C49D1A /* AssetsTool.swift in Sources */,
 				B77B6CFB2AC2821F00F172F3 /* main.swift in Sources */,
 				B7D3D02B2AC3D9C200B88A9B /* Obfuscation.swift in Sources */,
 				B7E12AE12CAA7D6000FD3111 /* NameReplacePlugin.swift in Sources */,
-				0FD3DF872ACEC1CD00740948 /* ResourceProcessingPlugin.swift in Sources */,
+				B7D1EFA72CB5271900C49D1A /* StringsTool.swift in Sources */,
 				B77B6D122AC28C6500F172F3 /* YAMLHandler.swift in Sources */,
 				B7D3D0292AC3CBCC00B88A9B /* ObfuscationError.swift in Sources */,
 				B77B6D162AC2A7B800F172F3 /* ObfuscationConfig.swift in Sources */,
-				B7D3D0272AC3CBC000B88A9B /* TemplateType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

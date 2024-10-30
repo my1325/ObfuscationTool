@@ -146,19 +146,12 @@ extension ProcessingManager {
         
         var processedFiles: [FileType: [ProcessingFile]] = [:]
         
-        for path in direcotryPath {
-            if !path.isFile {
-                processedFiles.merge(
-                    try processingDirectory(path),
-                    uniquingKeysWith: { $0 + $1 }
-                )
-            } else {
-                let processedFile = try processingFile(path)
-                let type = processedFile.fileType
-                var files = processedFiles[type] ?? []
-                files.append(processedFile)
-                processedFiles[type] = files
-            }
+        for path in direcotryPath where path.isFile {
+            let processedFile = try processingFile(path)
+            let type = processedFile.fileType
+            var files = processedFiles[type] ?? []
+            files.append(processedFile)
+            processedFiles[type] = files
         }
         return processedFiles
     }
