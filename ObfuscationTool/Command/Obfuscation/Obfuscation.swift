@@ -11,7 +11,7 @@ import Plugins
 import ProcessingFiles
 import SwiftFilePlugin
 
-internal final class Obfuscation {
+final class Obfuscation {
     let config: ObfuscationConfig
     init(config: ObfuscationConfig) {
         self.config = config
@@ -58,11 +58,14 @@ internal final class Obfuscation {
     
     private func replacePlugin(_ config: ObfuscationReplace) -> SwiftFileProcessingHandlePluginProtocol {
         let modes: [FileStringHandlePlugin.HandleMode] = config.map?
+            .keys
+            .map { $0 }
+            .sorted { $0.count > $1.count }
             .map {
-                .replace(
+                FileStringHandlePlugin.HandleMode.replace(
                     prefixOnly: config.onlyPrefix ?? false,
-                    originString: $0.key,
-                    replaceString: $0.value
+                    originString: $0,
+                    replaceString: config.map?[$0] ?? ""
                 )
             } ?? []
         return FileStringHandlePlugin(modes)
@@ -83,7 +86,6 @@ internal final class Obfuscation {
     }
         
     private func run(_ filePath: Path) throws {
-        
         let processingManager = ProcessingManager(path: filePath)
         processingManager.registerPlugin(swiftFilePlugins(), forFileType: .swift)
         if let replace = config.replace {

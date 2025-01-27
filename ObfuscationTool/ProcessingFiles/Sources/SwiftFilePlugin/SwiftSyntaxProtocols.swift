@@ -148,7 +148,7 @@ public struct CodeContainerSyntax<S: CustomCodeContainerSyntaxProtocol & CustomN
 }
 
 // MAKR: --
-extension TokenSyntax: CodeRawWordProtocol {
+extension TokenSyntax: @retroactive CodeRawWordProtocol {
     public var identifier: CodeRawWordIdentifier {
         switch tokenKind {
         case .identifier: return .identifier

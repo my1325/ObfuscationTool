@@ -72,10 +72,10 @@ import PathKit
 // commandGroup.run()
 
  let config = ObfuscationConfig(
-    replace: .init(["Esp": "Anopse_", "esp_": "anopse_"], onlyPrefix: false, onlyFilename: false),
+    replace: .init(["Clique_FKData": "BazoHaka", "clique_": "bazo_"]),
     shuffule: .init(order: true),
     zips: nil,
-    input: "/Users/mayong/Desktop/wudi/Espona/Anopse/Anopse",
+    input: "/Users/mayong/Desktop/wudi/Bazo/Bazo/Bazo/Haka",
     output: "",
     keepDirectory: true
  )

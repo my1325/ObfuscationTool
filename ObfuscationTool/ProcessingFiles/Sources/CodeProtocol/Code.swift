@@ -120,14 +120,24 @@ public struct CodeMapLazyContainer {
 
 public extension CodeContainerProtocol {
     func asCodeContainer() -> CodeContainer {
-        CodeContainer(type: type, entireDeclareWord: entireDeclareWord, code: code, rawName: rawName)
+        CodeContainer(
+            type: type,
+            entireDeclareWord: entireDeclareWord,
+            code: code,
+            rawName: rawName
+        )
     }
     
     func newCode(
         _ newCode: [CodeRawProtocol],
         newDeclareWord: [CodeRawWordProtocol]
     ) -> CodeContainer {
-        CodeContainer(type: type, entireDeclareWord: newDeclareWord, code: newCode, rawName: rawName)
+        CodeContainer(
+            type: type,
+            entireDeclareWord: newDeclareWord,
+            code: newCode,
+            rawName: rawName
+        )
     }
     
     func mapRawCode(_ block: @escaping (CodeRawProtocol) -> CodeRawProtocol) -> CodeContainerProtocol {
