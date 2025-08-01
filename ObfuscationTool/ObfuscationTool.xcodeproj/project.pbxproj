@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0FD3DF9A2ACF141B00740948 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 0FD3DF992ACF141B00740948 /* ZipArchive */; };
+		B70B78A12E2F85C50079F9AA /* PrefixRewriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70B78A02E2F85C50079F9AA /* PrefixRewriter.swift */; };
 		B77B6CFB2AC2821F00F172F3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B77B6CFA2AC2821F00F172F3 /* main.swift */; };
 		B77B6D092AC2894800F172F3 /* ProcessingFiles in Frameworks */ = {isa = PBXBuildFile; productRef = B77B6D082AC2894800F172F3 /* ProcessingFiles */; };
 		B77B6D122AC28C6500F172F3 /* YAMLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B77B6D112AC28C6500F172F3 /* YAMLHandler.swift */; };
@@ -37,6 +38,7 @@
 
 /* Begin PBXFileReference section */
 		0FF5F7792AA39DDA001B432B /* ProcessingFiles */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ProcessingFiles; sourceTree = "<group>"; };
+		B70B78A02E2F85C50079F9AA /* PrefixRewriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefixRewriter.swift; sourceTree = "<group>"; };
 		B754C3142BAD664700281C1E /* FilePath */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = FilePath; sourceTree = "<group>"; };
 		B77B6CF82AC2821F00F172F3 /* Command */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Command; sourceTree = BUILT_PRODUCTS_DIR; };
 		B77B6CFA2AC2821F00F172F3 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -90,6 +92,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		B70B789F2E2F85900079F9AA /* PrefixRewriter */ = {
+			isa = PBXGroup;
+			children = (
+				B70B78A02E2F85C50079F9AA /* PrefixRewriter.swift */,
+			);
+			path = PrefixRewriter;
+			sourceTree = "<group>";
+		};
 		B7587B422A8F6CD600C78D4D = {
 			isa = PBXGroup;
 			children = (
@@ -112,6 +122,7 @@
 		B77B6CF92AC2821F00F172F3 /* Command */ = {
 			isa = PBXGroup;
 			children = (
+				B70B789F2E2F85900079F9AA /* PrefixRewriter */,
 				B77B6D132AC2A07200F172F3 /* templates */,
 				B77B6D102AC28C4B00F172F3 /* Obfuscation */,
 				B77B6CFA2AC2821F00F172F3 /* main.swift */,
@@ -223,6 +234,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B7D1EFA52CB523A300C49D1A /* ZipTool.swift in Sources */,
+				B70B78A12E2F85C50079F9AA /* PrefixRewriter.swift in Sources */,
 				B7D1EFA92CB529E000C49D1A /* AssetsTool.swift in Sources */,
 				B77B6CFB2AC2821F00F172F3 /* main.swift in Sources */,
 				B7D3D02B2AC3D9C200B88A9B /* Obfuscation.swift in Sources */,

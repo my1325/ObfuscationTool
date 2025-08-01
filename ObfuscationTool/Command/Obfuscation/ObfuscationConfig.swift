@@ -36,11 +36,19 @@ struct ObfuscationZip: Codable {
     let newPassword: String?
 }
 
+struct ObfuscationCamelToSnake: Codable {
+    let prefix: String
+    
+    let toLowercase: Bool?
+}
+
 struct ObfuscationConfig: Codable {
 
     let replace: ObfuscationReplace?
     
     let shuffule: ObfuscationShuffule?
+    
+    let camelToSnake: [ObfuscationCamelToSnake]?
         
     let zips: [ObfuscationZip]?
     

@@ -7,6 +7,7 @@
 
 import Commander
 import PathKit
+import SwiftParser
 
 // let currentWorkSpace = DirectoryPath(path: "/Users/my/Desktop/mulitbeam/")
 // let currentWorkSpace = DirectoryPath(path: "/Users/mayong/Desktop/wudi/FstWear/multibeam")
@@ -71,14 +72,28 @@ import PathKit
 //
 // commandGroup.run()
 
+
+//[.init(prefix: "BF_", toLowercase: false), .init(prefix: "bf_", toLowercase: true)]
  let config = ObfuscationConfig(
-    replace: .init(["Clique_FKData": "BazoHaka", "clique_": "bazo_"]),
-    shuffule: .init(order: true),
+    replace: .init(["NOMVRIMNVCDSYHJSVZ": "NOMVRIMNVCDSYHJSVZC"]),
+//    replace: nil,
+    shuffule: nil,
+//    camelToSnake: [.init(prefix: "NOMVRIMNVCDSYHJSVZ", toLowercase: false), .init(prefix: "nomvrimnvcdsyhjsvz_", toLowercase: true)],
+    camelToSnake: nil,
     zips: nil,
-    input: "/Users/mayong/Desktop/wudi/Bazo/Bazo/Bazo/Haka",
-    output: "",
-    keepDirectory: true
+//    input: "/Users/mayong/Desktop/wudi/LiveKitSwift/BF_LiveKitSwift",
+    input: "/Users/mayong/Desktop/Kawa",
+    output: "/Users/mayong/Desktop/Kawa/Output",
+    keepDirectory: false
  )
 
  let obTool = Obfuscation(config: config)
  try obTool.run()
+
+
+//let file = Path("/Users/mayong/Desktop/wudi/LiveKitSwift/BF_LiveKitSwift/Business/view/GiftAbout/NewGiftBoard/BF_NewGiftBoardView.swift")
+//let source: String = try file.read()
+//var parser = Parser.parse(source: source)
+//let prefixWriter = PrefixRewriter(prefix: "bf_")
+//let output = prefixWriter.rewrite(parser)
+//try file.write(output.description, encoding: .utf8)

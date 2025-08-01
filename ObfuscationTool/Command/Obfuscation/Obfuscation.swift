@@ -56,27 +56,43 @@ final class Obfuscation {
         FileShuffleHandlePlugin(order: config.order ?? false)
     }
     
-    private func replacePlugin(_ config: ObfuscationReplace) -> SwiftFileProcessingHandlePluginProtocol {
-        let modes: [FileStringHandlePlugin.HandleMode] = config.map?
-            .keys
-            .map { $0 }
-            .sorted { $0.count > $1.count }
-            .map {
-                FileStringHandlePlugin.HandleMode.replace(
-                    prefixOnly: config.onlyPrefix ?? false,
-                    originString: $0,
-                    replaceString: config.map?[$0] ?? ""
-                )
-            } ?? []
+    private func fileStringHandlePlugin(_ config: ObfuscationReplace?, camelToSnake: [ObfuscationCamelToSnake]?) -> SwiftFileProcessingHandlePluginProtocol {
+        var modes: [FileStringHandlePlugin.HandleMode] = []
+        if let config {
+            let configModes: [FileStringHandlePlugin.HandleMode] = config.map?
+                .keys
+                .map { $0 }
+                .sorted { $0.count > $1.count }
+                .map {
+                    FileStringHandlePlugin.HandleMode.replace(
+                        prefixOnly: config.onlyPrefix ?? false,
+                        originString: $0,
+                        replaceString: config.map?[$0] ?? ""
+                    )
+                } ?? []
+            
+            modes += configModes
+        }
+        
+        if let camelToSnake, !camelToSnake.isEmpty {
+            let configModes: [FileStringHandlePlugin.HandleMode] = camelToSnake
+                .map {
+                    FileStringHandlePlugin.HandleMode.camelToSnake(
+                        handlePrefix: $0.prefix,
+                        toLowercase: $0.toLowercase ?? true
+                    )
+                }
+            
+            modes += configModes
+        }
+        
         return FileStringHandlePlugin(modes)
     }
     
     private func swiftFilePlugins() -> SwiftFileProcessingPlugin {
         var plugins: [SwiftFileProcessingHandlePluginProtocol] = []
         
-        if let replaceConfig = config.replace {
-            plugins.append(replacePlugin(replaceConfig))
-        }
+        plugins.append(fileStringHandlePlugin(config.replace, camelToSnake: config.camelToSnake))
         
         if let shuffle = config.shuffule {
             plugins.append(shuffulePlugin(shuffle))
@@ -85,12 +101,17 @@ final class Obfuscation {
         return SwiftFileProcessingPlugin(plugins: plugins)
     }
         
-    private func run(_ filePath: Path) throws {
+    private func run(_ filePath: Path, onlyFilename: Bool = false) throws {
         let processingManager = ProcessingManager(path: filePath)
         processingManager.registerPlugin(swiftFilePlugins(), forFileType: .swift)
         if let replace = config.replace {
             processingManager.registerPlugin(NameReplacePlugin(replace), forFileType: .all)
         }
+        
+        if let camelToSnake = config.camelToSnake, !camelToSnake.isEmpty {
+            processingManager.registerPlugin(NameCamelToSnakePlugin(camelToSnake, onlyFilename: onlyFilename), forFileType: .all)
+        }
+        
         processingManager.delegate = self
         
         let files = try processingManager.processing()

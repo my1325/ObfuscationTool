@@ -17,6 +17,11 @@ open class FileStringHandlePlugin: SwiftFileProcessingHandlePluginProtocol {
             originString: String,
             replaceString: String
         )
+        
+        case camelToSnake(
+            handlePrefix: String,
+            toLowercase: Bool
+        )
 
         func handler(
             _ codeType: [CodeType],
@@ -30,6 +35,13 @@ open class FileStringHandlePlugin: SwiftFileProcessingHandlePluginProtocol {
                     replace: replaceString,
                     supportCodeType: codeType,
                     supportCodeContainerType: codeContainerType
+                )
+            case let .camelToSnake(handlePrefix, toLowercase):
+                FileStringCamelToSnake(
+                    handlePrefix: handlePrefix,
+                    supportCodeType: codeType,
+                    supportCodeContainerType: codeContainerType,
+                    toLowercase: toLowercase
                 )
             }
         }
@@ -196,6 +208,88 @@ open class FileStringReplace: FileStringPrefixModeHandler {
             entireDeclareWord: replace(codeContainer.entireDeclareWord),
             code: codeContainer.code,
             rawName: replace(codeContainer.rawName)
+        )
+        .mapCode(
+            supportCodeType,
+            block: handleCode
+        )
+        .mapCodeContainer(
+            supportCodeContainerType,
+            block: handleCodeContainer
+        )
+        .asCodeContainer()
+    }
+}
+
+open class FileStringCamelToSnake: FileStringPrefixModeHandler {
+    let handlePrefix: String
+    let supportCodeType: [CodeType]
+    let supportCodeContainerType: [CodeContainerType]
+    let toLowercase: Bool
+    init(
+        handlePrefix: String,
+        supportCodeType: [CodeType],
+        supportCodeContainerType: [CodeContainerType],
+        toLowercase: Bool
+    ) {
+        self.handlePrefix = handlePrefix
+        self.supportCodeType = supportCodeType
+        self.supportCodeContainerType = supportCodeContainerType
+        self.toLowercase = toLowercase
+    }
+    
+    public func prepareWithAllCode(_ allCode: [CodeRawProtocol]) {}
+    
+    func camelToSnake(_ name: String) -> String {
+        name.components(separatedBy: .newlines)
+            .map {
+                guard $0.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix(handlePrefix) else {
+                    return $0
+                }
+                
+                let string = $0.replacingOccurrences(of: handlePrefix, with: "_PREFIX_")
+                let line = string.replacingOccurrences(of: "([a-z])([A-Z])", with: "$1_$2", options: .regularExpression)
+                if toLowercase {
+                    return line.lowercased()
+                        .replacingOccurrences(of: "_prefix_", with: handlePrefix)
+                }
+                return line.capitalized
+                    .replacingOccurrences(of: "_Prefix_", with: handlePrefix)
+            }
+            .joined(separator: "\n")
+    }
+    
+    func camelToSnake(_ codeWords: [CodeRawWordProtocol]) -> [CodeRawWordProtocol] {
+        codeWords.map {
+            guard $0.identifier == .identifier else {
+                return $0
+            }
+            return $0.newWord(camelToSnake($0.content))
+        }
+    }
+    
+    public func handleCode(_ code: CodeProtocol) -> CodeProtocol {
+        Code(
+            type: code.type,
+            words: camelToSnake(code.words),
+            rawName: camelToSnake(code.rawName)
+        )
+    }
+    
+    public func handleCodeContainer(_ codeContainer: CodeContainerProtocol) -> CodeContainerProtocol {
+        CodeContainer(
+            type: codeContainer.type,
+            entireDeclareWord: camelToSnake(codeContainer.entireDeclareWord),
+            code: codeContainer.code.map {
+                if let rawCode = $0 as? CodeProtocol {
+                    return handleCode(rawCode)
+                }
+                if let rawContainer = $0 as? CodeContainerProtocol {
+                    return handleCodeContainer(rawContainer)
+                }
+                return $0
+            },
+            rawName: camelToSnake(codeContainer.rawName)
         )
         .mapCode(
             supportCodeType,

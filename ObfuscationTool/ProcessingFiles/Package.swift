@@ -11,7 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/kylef/PathKit.git", .upToNextMajor(from: "1.0.1")),
-        .package(url: "https://github.com/apple/swift-syntax.git", .branchItem("main")),
+        .package(url: "https://github.com/apple/swift-syntax.git", .upToNextMajor(from: "509.0.0")),
     ],
     targets: [
         .target(name: "CodeProtocol"),
