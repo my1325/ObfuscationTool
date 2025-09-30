@@ -49,7 +49,9 @@ struct ObfuscationConfig: Codable {
     let shuffule: ObfuscationShuffule?
     
     let camelToSnake: [ObfuscationCamelToSnake]?
-        
+
+    let snameToCamel: [ObfuscationCamelToSnake]?
+
     let zips: [ObfuscationZip]?
     
     let input: String?

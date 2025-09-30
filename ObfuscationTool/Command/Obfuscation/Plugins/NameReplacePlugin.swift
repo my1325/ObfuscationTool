@@ -142,3 +142,72 @@ open class NameCamelToSnakePlugin: ProcessingFilePlugin {
         }
     }
 }
+
+open class NameSnakeToCamelPlugin: ProcessingFilePlugin {
+    let configs: [ObfuscationCamelToSnake]
+    let onlyFilename: Bool
+    init(_ configs: [ObfuscationCamelToSnake], onlyFilename: Bool) {
+        self.configs = configs
+        self.onlyFilename = onlyFilename
+    }
+
+    public func processingManager(
+        _ manager: ProcessingManager,
+        didProcessedFile file: ProcessingFile
+    ) throws -> ProcessingFile {
+        file
+    }
+
+    public func processingManager(
+        _ manager: ProcessingManager,
+        completedProcessFile files: [ProcessingFile]
+    ) throws -> [ProcessingFile] {
+        try files.forEach {
+            try $0.newPath(resolvePath($0.filePath))
+        }
+        return files
+    }
+
+    open func resolvePath(_ path: Path) throws -> Path {
+        if onlyFilename {
+            return path.parent() + resolvePathComponent(path.lastComponent)
+        }
+        return Path(
+            components: path.components
+                .map(resolvePathComponent)
+        )
+    }
+
+    func snameToCamel(_ name: String, config: ObfuscationCamelToSnake) -> String {
+        name.components(separatedBy: .newlines)
+            .map {
+                guard $0.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix(config.prefix) else {
+                    return $0
+                }
+
+                let string = $0.replacingOccurrences(of: config.prefix, with: "PREFIX_")
+//                let line = string.replacingOccurrences(of: "([a-z])([A-Z])", with: "$1_$2", options: .regularExpression)
+                let line = string.components(separatedBy: "_")
+                    .map {
+                        if $0 != "PREFIX" {
+                            print($0.capitalized)
+                            return $0.capitalized
+                        }
+                        return $0
+                    }
+                    .joined()
+                return line
+                    .replacingOccurrences(of: "PREFIX", with: config.prefix)
+            }
+            .joined(separator: "\n")
+    }
+
+    func resolvePathComponent(_ pathComponent: String) -> String {
+        configs.reduce(pathComponent) {
+            snameToCamel(
+                $0,
+                config: $1
+            )
+        }
+    }
+}

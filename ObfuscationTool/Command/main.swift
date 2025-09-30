@@ -67,33 +67,69 @@ import SwiftParser
 //        } catch {
 //            print("\(error)")
 //        }
-//    }
+//    }/Users/mayong/Desktop/wudi/Remi/Remi/Remi/RemiCK
 // }
 //
 // commandGroup.run()
 
-
-//[.init(prefix: "BF_", toLowercase: false), .init(prefix: "bf_", toLowercase: true)]
- let config = ObfuscationConfig(
-    replace: .init(["NOMVRIMNVCDSYHJSVZ": "NOMVRIMNVCDSYHJSVZC"]),
-//    replace: nil,
+// [
+//    "BF_": "Loop_Video_", "bf_": "loop_video_",
+//    "live_": "home_", "Live_": "Home_",
+//    "gift_": "long_", "Gift_": "Long_",
+//    "premium_": "preview_", "Premium_": "Preview_",
+//    "anchor_": "aUser", "Anchor_": "AUser_",
+//    "combo_": "cobo_", "Combo_": "Cobo_",
+//    "take_": "pop_", "Take_": "Pop_",
+//    "pk_": "battle_", "Pk_": "Battle_",
+// ]
+// [.init(prefix: "BF_", toLowercase: false), .init(prefix: "bf_", toLowercase: true)]
+let config = ObfuscationConfig(
+//    replace: .init(["Luka_Live_": "NubeLove", "luka_": "nube_"]),
+//    replace: .init(
+//        [
+//            "BF_": "Luka", "bf_": "luka_",
+//            "live_": "new_", "Live_": "New_",
+//            "gift_": "event_", "Gift_": "Event_",
+//            "premium_": "hava_", "Premium_": "Hava_",
+//            "anchor_": "lUser", "Anchor_": "LUser_",
+//            "combo_": "shift_", "Combo_": "Shift_",
+//            "take_": "bring_", "Take_": "Bring_",
+//            "pk_": "double_", "Pk_": "Double_",
+//        ]
+//    ),
+    replace: nil,
     shuffule: nil,
-//    camelToSnake: [.init(prefix: "NOMVRIMNVCDSYHJSVZ", toLowercase: false), .init(prefix: "nomvrimnvcdsyhjsvz_", toLowercase: true)],
+//    camelToSnake: [
+//        .init(prefix: "ViewLoop", toLowercase: false),
+//        .init(prefix: "DataLoop", toLowercase: false),
+//        .init(prefix: "HairLoop", toLowercase: false),
+//        .init(prefix: "RequestLoop", toLowercase: false),
+//        .init(prefix: "hairLoop_", toLowercase: true),
+//        .init(prefix: "lp_", toLowercase: true),
+//    ],
+//    camelToSnake: [
+//        .init(prefix: "BF_", toLowercase: false),
+//        .init(prefix: "bf_", toLowercase: true),
+//    ],
     camelToSnake: nil,
+    snameToCamel: [
+        .init(prefix: "NahuKit1_", toLowercase: false),
+        .init(prefix: "nahuKit1_", toLowercase: true)
+    ],
     zips: nil,
-//    input: "/Users/mayong/Desktop/wudi/LiveKitSwift/BF_LiveKitSwift",
-    input: "/Users/mayong/Desktop/Kawa",
-    output: "/Users/mayong/Desktop/Kawa/Output",
-    keepDirectory: false
- )
+    input: "/Users/mayong/Downloads/BF_LiveKitSwift",
+//    input: "/Users/mayong/Desktop/wudi/luka/Luka/Luka/Sources/Room",
+//    input: "/Users/mayong/Desktop/wudi/NebuMy/Nebu/Nebu/Love",
+    output: "/Users/mayong/Downloads/BF_LiveKitSwift_1",
+    keepDirectory: true
+)
 
- let obTool = Obfuscation(config: config)
- try obTool.run()
+let obTool = Obfuscation(config: config)
+try obTool.run()
 
-
-//let file = Path("/Users/mayong/Desktop/wudi/LiveKitSwift/BF_LiveKitSwift/Business/view/GiftAbout/NewGiftBoard/BF_NewGiftBoardView.swift")
-//let source: String = try file.read()
-//var parser = Parser.parse(source: source)
-//let prefixWriter = PrefixRewriter(prefix: "bf_")
-//let output = prefixWriter.rewrite(parser)
-//try file.write(output.description, encoding: .utf8)
+// let file = Path("/Users/mayong/Desktop/wudi/LiveKitSwift/BF_LiveKitSwift/Business/view/GiftAbout/NewGiftBoard/BF_NewGiftBoardView.swift")
+// let source: String = try file.read()
+// var parser = Parser.parse(source: source)
+// let prefixWriter = PrefixRewriter(prefix: "bf_")
+// let output = prefixWriter.rewrite(parser)
+// try file.write(output.description, encoding: .utf8)
