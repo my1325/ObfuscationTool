@@ -120,6 +120,7 @@ extension SubscriptDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {
 extension AssociatedTypeDeclSyntax: CustomNamedDeclSyntax, CustomCodeSyntaxProtocol {}
 
 extension ClassDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
+extension ActorDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
 extension StructDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
 extension ProtocolDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
 extension EnumDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
@@ -229,6 +230,8 @@ extension SyntaxProtocol {
             return CodeSyntax(syntaxNode: node)
         } else if let node = self as? AssociatedTypeDeclSyntax {
             return CodeSyntax(syntaxNode: node)
+        } else if let node = self as? ActorDeclSyntax {
+            return CodeContainerSyntax(syntaxNode: node)
         } else {
             fatalError("unknown type \(self)")
         }

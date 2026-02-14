@@ -11,6 +11,7 @@ import SwiftSyntax
 public final class SwiftSyntaxWalker: SyntaxVisitor {
     public enum SupportSyntaxDecl {
         case `class`
+        case `actor`
         case `protocol`
         case `struct`
         case `enum`
@@ -65,7 +66,11 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
     override public func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         appnedNode(node, supportType: .class)
     }
-    
+
+    public override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
+        appnedNode(node, supportType: .actor)
+    }
+
     override public func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
         appnedNode(node, supportType: .protocol)
     }

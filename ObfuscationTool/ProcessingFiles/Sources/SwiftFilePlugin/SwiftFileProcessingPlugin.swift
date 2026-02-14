@@ -13,7 +13,7 @@ import CodeProtocol
 import PathKit
 
 public protocol SwiftFileProcessingHandlePluginProtocol {
-    func processingPlugin(
+    func processingPlugin( 
         _ plugin: SwiftFileProcessingPlugin,
         didProcessedFiles file: ProcessingFile
     ) -> ProcessingFile

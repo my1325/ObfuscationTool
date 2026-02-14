@@ -97,7 +97,10 @@ let config = ObfuscationConfig(
 //            "pk_": "double_", "Pk_": "Double_",
 //        ]
 //    ),
-    replace: nil,
+    replace: .init(["HixWeb": "VoyaTravel", "hixweb_": "voyaTravel_"]),
+//    replace: .init(["Tappy": "Voya", "tappy": "voya_"]),
+//    replace: .init([:]),
+//    shuffule: .init(order: true),
     shuffule: nil,
 //    camelToSnake: [
 //        .init(prefix: "ViewLoop", toLowercase: false),
@@ -112,17 +115,18 @@ let config = ObfuscationConfig(
 //        .init(prefix: "bf_", toLowercase: true),
 //    ],
     camelToSnake: nil,
-    snameToCamel: [
-        .init(prefix: "NahuKit1_", toLowercase: false),
-        .init(prefix: "nahuKit1_", toLowercase: true)
-    ],
+    snameToCamel: nil,
     zips: nil,
-    input: "/Users/mayong/Downloads/BF_LiveKitSwift",
+//    input: "/Users/mayong/Downloads/BF_LiveKitSwift",
+//    input: "/Users/mayong/Desktop/wudi/BuzzyMy/Buzzy/BuzzyChallenge/code",
 //    input: "/Users/mayong/Desktop/wudi/luka/Luka/Luka/Sources/Room",
-//    input: "/Users/mayong/Desktop/wudi/NebuMy/Nebu/Nebu/Love",
-    output: "/Users/mayong/Downloads/BF_LiveKitSwift_1",
+    input: "/Users/mayong/Desktop/wudi/VoyaMy/Voya/VoyaTravel/Origin/code",
+//    output: "/Users/mayong/Downloads/BF_LiveKitSwift_1",
+//    output: "/Users/mayong/Desktop/wudi/OrenMy/Oren/OrenChat/OrenChat",
+    output: "/Users/mayong/Desktop/wudi/VoyaMy/Voya/VoyaTravel/Sources",
     keepDirectory: true
 )
+
 
 let obTool = Obfuscation(config: config)
 try obTool.run()
