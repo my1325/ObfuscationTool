@@ -97,8 +97,8 @@ let config = ObfuscationConfig(
 //            "pk_": "double_", "Pk_": "Double_",
 //        ]
 //    ),
-    replace: .init(["HixWeb": "VoyaTravel", "hixweb_": "voyaTravel_"]),
-//    replace: .init(["Tappy": "Voya", "tappy": "voya_"]),
+//    replace: .init(["HixWeb": "VoyaTravel", "hixweb_": "voyaTravel_"]),
+    replace: .init(["Voya": "Peppy", "voya_": "peppy_"]),
 //    replace: .init([:]),
 //    shuffule: .init(order: true),
     shuffule: nil,
@@ -120,10 +120,10 @@ let config = ObfuscationConfig(
 //    input: "/Users/mayong/Downloads/BF_LiveKitSwift",
 //    input: "/Users/mayong/Desktop/wudi/BuzzyMy/Buzzy/BuzzyChallenge/code",
 //    input: "/Users/mayong/Desktop/wudi/luka/Luka/Luka/Sources/Room",
-    input: "/Users/mayong/Desktop/wudi/VoyaMy/Voya/VoyaTravel/Origin/code",
+    input: "/Users/mayong/Desktop/wudi/Peppy/Peppy/Peppy",
 //    output: "/Users/mayong/Downloads/BF_LiveKitSwift_1",
 //    output: "/Users/mayong/Desktop/wudi/OrenMy/Oren/OrenChat/OrenChat",
-    output: "/Users/mayong/Desktop/wudi/VoyaMy/Voya/VoyaTravel/Sources",
+    output: "/Users/mayong/Desktop/wudi/Peppy/Peppy/Peppy",
     keepDirectory: true
 )
 
