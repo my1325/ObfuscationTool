@@ -10,7 +10,6 @@ let package = Package(
         .library(name: "ProcessingFiles", targets: ["ProcessingFiles", "SwiftFilePlugin", "CodeProtocol"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/my1325/FilePath.git", .branchItem("main")),
         .package(url: "https://github.com/apple/swift-syntax.git", .branchItem("main")),
     ],
     targets: [

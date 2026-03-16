@@ -6,12 +6,15 @@
 //
 
 import Cocoa
-import ProcessingFiles
+//import ProcessingFiles
 //sudo chmod -R 755 文件目录
 
 class ViewController: NSViewController {
     @IBOutlet weak var filePathTextFiled: NSScrollView!
     
+    @IBOutlet weak var desPathTextFiled: NSScrollView!
+    
+    @IBOutlet weak var repleaseTextFiled: NSTextField!
     @IBOutlet weak var preStrTextFiled: NSTextField!
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,6 +46,39 @@ class ViewController: NSViewController {
         print("替换完成")
     }
     
+    @IBAction func clickMoveFile(_ sender: Any) {
+        guard let preTextView = filePathTextFiled.documentView as? NSTextView else {
+            return
+        }
+        guard let desTextView = desPathTextFiled.documentView as? NSTextView else {
+            return
+        }
+        let filePaths = preTextView.string.components(separatedBy: "\n")
+
+        let desfilePaths = desTextView.string.components(separatedBy: "\n").first ?? ""
+
+        for filePath in filePaths {
+            if FileManager.default.fileExists(atPath: filePath) == false {
+                return
+            }
+            AssetsNode.movePath(file: filePath, desPath: desfilePaths)
+        }
+    }
+    @IBAction func clickAssets(_ sender: Any) {
+        let preStr = preStrTextFiled.stringValue.ignoreEmpty().replacingOccurrences(of: "\n", with: "")
+        let pleaseStr = repleaseTextFiled.stringValue.ignoreEmpty().replacingOccurrences(of: "\n", with: "")
+        
+        guard let textView = filePathTextFiled.documentView as? NSTextView else {
+            return
+        }
+        let filePaths = textView.string.components(separatedBy: "\n")
+        for filePath in filePaths {
+            if FileManager.default.fileExists(atPath: filePath) == false {
+                return
+            }
+            AssetsNode.changeAssetFile(file: filePath, str: preStr, pleaseStr: pleaseStr)
+        }
+    }
     @IBAction func clickExchang(_ sender: NSButton) {
         guard let textView = filePathTextFiled.documentView as? NSTextView else {
             return
@@ -58,6 +94,21 @@ class ViewController: NSViewController {
         }
         ReadNode.exchageLineFileNodes(filePathStrs: filePaths)
         print("操作完成")
+    }
+    @IBAction func clickRecreate(_ sender: Any) {
+        guard let textView = filePathTextFiled.documentView as? NSTextView else {
+            return
+        }
+        let filePaths = textView.string.components(separatedBy: "\n")
+        guard filePaths.count > 0 else {
+            return
+        }
+        for filePath in filePaths {
+            if FileManager.default.fileExists(atPath: filePath) == false {
+                return
+            }
+        }
+        ReadNode.create_newFile(filePaths: filePaths)
     }
 }
 

@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import FilePath
+//import FilePath
 
 //@相关
 let aiteNames:[String] = []
@@ -765,6 +765,7 @@ class ReadNode {
                         }
                     }
                 }
+                
                 writeStr(filePathStr: file, str: newStr as String)
             }
         }
@@ -960,7 +961,38 @@ class ReadNode {
         for filePathStr in filePathStrs {
             reductionCustomStr(filePathStr: filePathStr)
         }
+        
+        create_newFile(filePaths: filePathStrs)
+        
+        
+        
         CacheData.shared.data.removeAll()
+    }
+    
+    class func create_newFile(filePaths:[String]) {
+        for filePathStr in filePaths {
+            create_newFile(file: filePathStr)
+        }
+
+    }
+    
+    class func create_newFile(file:String) {
+        let filePaths = getFilePath(rootDirectorPath: file)
+        
+        for file in filePaths {
+            let fileNode = FilePath.file(file: file)
+            if let data = try? fileNode.readData(), let codeStr = String(data: data, encoding: .utf8) {
+                do {
+                    try fileNode.remove()
+                    try fileNode.createIfNotExists()
+                    
+                } catch {
+                    print("removeFileError:\(error)")
+                    
+                }
+                writeStr(filePathStr: file, str: codeStr)
+            }
+        }
     }
     
     class func changeFileAllow(write:Bool, filePath:String) {
@@ -978,6 +1010,206 @@ class ReadNode {
 //            task.launch()
 //            task.waitUntilExit()
 //        }
+    }
+    
+
+    
+    
+    
+}
+
+
+class AssetsNode {
+    
+    enum AssetsType {
+        case json(file:String)
+        case png(file:String)
+        case jepg(file:String)
+        case imageset(file:String)
+    }
+    
+    
+    private class func getAssetFilePath(rootDirectorPath:String) -> [AssetsType] {
+        var filePaths:[AssetsType] = []
+        var isDir:ObjCBool = true
+        _ = FileManager.default.fileExists(atPath: rootDirectorPath, isDirectory: &isDir)
+        let judgeFile:((URL?) -> AssetsType?) = { url in
+//            return str == "h" || str == "m" || str == "c" || str == "mm"
+            let extesion:String = url?.pathExtension ?? ""
+            if extesion == "json" {
+                return .json(file: url?.absoluteString ?? "")
+            } else if  extesion == "png" {
+                return .png(file: url?.absoluteString ?? "")
+            } else if  extesion == "jepg" {
+                return .jepg(file: url?.absoluteString ?? "")
+            }
+            return nil
+        }
+        
+        if !isDir.boolValue {
+            let fileUrl = URL(string: rootDirectorPath)
+            
+            if let file = judgeFile(fileUrl) {
+                filePaths.append(file)
+            }
+            return filePaths
+        }
+        
+        let array:[String] = (try? FileManager.default.contentsOfDirectory(atPath: rootDirectorPath)) ?? []
+        for fileName in array {
+            var isDir:ObjCBool = true
+            let filePath:String = "\(rootDirectorPath)/\(fileName)"
+            if FileManager.default.fileExists(atPath: filePath, isDirectory: &isDir) {
+                if !isDir.boolValue {
+                    let fileUrl = URL(string: filePath)
+                    if let file = judgeFile(fileUrl) {
+                        filePaths.append(file)
+                    }
+                } else {
+                    filePaths.append(contentsOf: getAssetFilePath(rootDirectorPath: filePath))
+                }
+            }
+        }
+        return filePaths
+    }
+    
+    private class func getDictionaryPath(rootDirectorPath:String) -> [AssetsType] {
+        var filePaths:[AssetsType] = []
+        var isDir:ObjCBool = true
+        _ = FileManager.default.fileExists(atPath: rootDirectorPath, isDirectory: &isDir)
+        let judgeFile:((URL?) -> AssetsType?) = { url in
+//            return str == "h" || str == "m" || str == "c" || str == "mm"
+            let extesion:String = url?.pathExtension ?? ""
+            if extesion == "imageset" {
+                return .imageset(file: url?.absoluteString ?? "")
+            }
+            return nil
+        }
+        
+        if isDir.boolValue {
+            let fileUrl = URL(string: rootDirectorPath)
+            
+            if let file = judgeFile(fileUrl) {
+                filePaths.append(file)
+            }
+//            return filePaths
+        }
+        
+        let array:[String] = (try? FileManager.default.contentsOfDirectory(atPath: rootDirectorPath)) ?? []
+        for fileName in array {
+            var isDir:ObjCBool = true
+            let filePath:String = "\(rootDirectorPath)/\(fileName)"
+            if FileManager.default.fileExists(atPath: filePath, isDirectory: &isDir) {
+                if isDir.boolValue {
+                    filePaths.append(contentsOf: getDictionaryPath(rootDirectorPath: filePath))
+                    let fileUrl = URL(string: filePath)
+                    if let file = judgeFile(fileUrl) {
+                        filePaths.append(file)
+                    }
+                } else {
+//                    filePaths.append(contentsOf: getAssetFilePath(rootDirectorPath: filePath))
+                }
+            }
+        }
+        return filePaths
+    }
+    
+    class func changeAssetFile(file:String, str:String, pleaseStr:String) {
+        let filePaths = getAssetFilePath(rootDirectorPath: file)
+        
+        for filePath in filePaths {
+            switch filePath {
+            case .json(let file):
+                let fileNode = FilePath.file(file: file)
+                if let data = try? fileNode.readData(), var codeStr = String(data: data, encoding: .utf8) {
+                    codeStr = codeStr.replacingOccurrences(of: str, with: pleaseStr)
+                    do {
+                        try fileNode.remove()
+                        try fileNode.createIfNotExists()
+                        
+                    } catch {
+                        print("removeFileError:\(error)")
+                        
+                    }
+                    writeStr(filePathStr: file, str: codeStr)
+                }
+            case .png(let file):
+                var fileNode = FilePath.file(file: file)
+                
+                let rename = fileNode.lastPathConponent.replacingOccurrences(of: str, with: pleaseStr).replacingOccurrences(of: "/", with: "")
+//                let newFile = fileNode.parentDirectory.appendFilePathConponent(rename)
+//                let result = FileManager.default.createFile(atPath: newFile.filePath, contents: nil)
+                
+                do {
+                    try fileNode.rename(rename)
+                } catch {
+                    print("\(error)")
+                }
+                
+                
+            case .jepg(let file):
+                var fileNode = FilePath.file(file: file)
+                let rename = fileNode.lastPathConponent.replacingOccurrences(of: str, with: pleaseStr).replacingOccurrences(of: "/", with: "")
+                try? fileNode.rename(rename)
+            default:
+                break
+            }
+            
+        }
+        
+        
+        
+        let dirctionaryPaths = getDictionaryPath(rootDirectorPath: file)
+        for filePath in dirctionaryPaths {
+            switch filePath {
+            case .imageset(let file):
+                var fileNode = FilePath.directory(directory: file)
+                let rename = fileNode.lastPathConponent.replacingOccurrences(of: str, with: pleaseStr).replacingOccurrences(of: "/", with: "")
+//                let newFile = fileNode.parentDirectory.appendFilePathConponent(rename)
+//                let result = FileManager.default.createFile(atPath: newFile.filePath, contents: nil)
+                do {
+                    try fileNode.rename(rename)
+                } catch {
+                    print("\(error)")
+                }
+            default:break
+            }
+            
+        }
+    }
+    
+    class func movePath(file:String, desPath:String) {
+        let filePaths = getAssetFilePath(rootDirectorPath: file)
+        for filePath in filePaths {
+            switch filePath {
+            case .json(let file):
+                let fileNode = FilePath.file(file: file)
+                let desPathNode:FilePath = FilePath.file(file: desPath + "/" + fileNode.lastPathConponent)
+
+                _ = try? fileNode.moveToNewPath(desPathNode)
+            case .png(let file):
+                let fileNode = FilePath.file(file: file)
+                let desPathNode:FilePath = FilePath.file(file: desPath + "/" + fileNode.lastPathConponent)
+                _ = try? fileNode.moveToNewPath(desPathNode)
+            case .jepg(let file):
+                let fileNode = FilePath.file(file: file)
+                let desPathNode:FilePath = FilePath.file(file: desPath + "/" + fileNode.lastPathConponent)
+                _ = try? fileNode.moveToNewPath(desPathNode)
+            default:
+                break
+            }
+            
+        }
+    }
+    
+    private class func writeStr(filePathStr:String, str:String) {
+        let newCode:String = str
+        let filePath = FilePath.file(file: filePathStr)
+        try? FileManager.default.removeItem(atPath: filePathStr)
+        
+        if let data = newCode.data(using: .utf8) {
+            try? filePath.writeData(data)
+        }
     }
 }
 

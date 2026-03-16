@@ -7,7 +7,9 @@
 
 import Cocoa
 
-func rubbishFunc() -> Bool {
+
+
+func RefreshFunc() -> Bool {
     var result = 1
     var result1: Int = Int(arc4random())
     
