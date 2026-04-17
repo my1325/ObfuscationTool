@@ -145,9 +145,37 @@ extension ProcessingManager {
         }
         
         var processedFiles: [FileType: [ProcessingFile]] = [:]
-        
-        for path in direcotryPath where path.isFile {
-            let processedFile = try processingFile(path)
+
+        let fileManager = FileManager.default
+        let root = direcotryPath.string
+        let enumerator = fileManager.enumerator(
+            atPath: root
+        )
+
+        while let relative = enumerator?.nextObject() as? String {
+            guard !relative.isEmpty else { continue }
+            // 跳过隐藏文件/目录（包含任意路径段以 "." 开头）
+            if relative.split(separator: "/").contains(where: { $0.hasPrefix(".") }) {
+                enumerator?.skipDescendants()
+                continue
+            }
+
+            let fullPath = Path(root + "/" + relative)
+            if fullPath.isDirectory {
+                // 如果目录本身是“有扩展名的资源目录”（如 .xcassets/.lproj/.bundle），交给对应插件处理
+                if let fileType = fullPath.fileType, pluginsForType(fileType) != nil {
+                    let processedFile = try processingFile(fullPath)
+                    let type = processedFile.fileType
+                    var files = processedFiles[type] ?? []
+                    files.append(processedFile)
+                    processedFiles[type] = files
+                    enumerator?.skipDescendants()
+                }
+                continue
+            }
+
+            guard fullPath.isFile else { continue }
+            let processedFile = try processingFile(fullPath)
             let type = processedFile.fileType
             var files = processedFiles[type] ?? []
             files.append(processedFile)

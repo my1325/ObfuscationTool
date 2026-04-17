@@ -8,6 +8,7 @@
 import Foundation
 import PathKit
 import ProcessingFiles
+import ObfuscationCore
 
 open class NameReplacePlugin: ProcessingFilePlugin {
     var onlyFilename: Bool {
@@ -23,6 +24,7 @@ open class NameReplacePlugin: ProcessingFilePlugin {
     }
     
     let replace: ObfuscationReplace
+    private let transformer = PathTransformer()
     init(_ replace: ObfuscationReplace) {
         self.replace = replace
     }
@@ -45,13 +47,13 @@ open class NameReplacePlugin: ProcessingFilePlugin {
     }
     
     open func resolvePath(_ path: Path) throws -> Path {
-        if onlyFilename {
-            return path.parent() + resolvePathComponent(path.lastComponent)
-        }
-        return Path(
-            components: path.components
-                .map(resolvePathComponent)
+        let rule = Rule(
+            enabled: true,
+            appliesTo: [.path],
+            scope: .init(onlyPrefix: onlyPrefix, onlyFilename: onlyFilename),
+            kind: .replace(map: map)
         )
+        return transformer.transform(path, rules: [rule])
     }
     
     func replaceString(
@@ -82,6 +84,7 @@ open class NameReplacePlugin: ProcessingFilePlugin {
 open class NameCamelToSnakePlugin: ProcessingFilePlugin {
     let configs: [ObfuscationCamelToSnake]
     let onlyFilename: Bool
+    private let transformer = PathTransformer()
     init(_ configs: [ObfuscationCamelToSnake], onlyFilename: Bool) {
         self.configs = configs
         self.onlyFilename = onlyFilename
@@ -105,13 +108,15 @@ open class NameCamelToSnakePlugin: ProcessingFilePlugin {
     }
     
     open func resolvePath(_ path: Path) throws -> Path {
-        if onlyFilename {
-            return path.parent() + resolvePathComponent(path.lastComponent)
+        let rules: [Rule] = configs.map {
+            Rule(
+                enabled: true,
+                appliesTo: [.path],
+                scope: .init(onlyPrefix: false, onlyFilename: onlyFilename),
+                kind: .caseConvert(prefix: $0.prefix, toLowercase: $0.toLowercase ?? true, direction: .camelToSnake)
+            )
         }
-        return Path(
-            components: path.components
-                .map(resolvePathComponent)
-        )
+        return transformer.transform(path, rules: rules)
     }
     
     func camelToSnake(_ name: String, config: ObfuscationCamelToSnake) -> String {
@@ -146,6 +151,7 @@ open class NameCamelToSnakePlugin: ProcessingFilePlugin {
 open class NameSnakeToCamelPlugin: ProcessingFilePlugin {
     let configs: [ObfuscationCamelToSnake]
     let onlyFilename: Bool
+    private let transformer = PathTransformer()
     init(_ configs: [ObfuscationCamelToSnake], onlyFilename: Bool) {
         self.configs = configs
         self.onlyFilename = onlyFilename
@@ -169,13 +175,15 @@ open class NameSnakeToCamelPlugin: ProcessingFilePlugin {
     }
 
     open func resolvePath(_ path: Path) throws -> Path {
-        if onlyFilename {
-            return path.parent() + resolvePathComponent(path.lastComponent)
+        let rules: [Rule] = configs.map {
+            Rule(
+                enabled: true,
+                appliesTo: [.path],
+                scope: .init(onlyPrefix: false, onlyFilename: onlyFilename),
+                kind: .caseConvert(prefix: $0.prefix, toLowercase: $0.toLowercase ?? true, direction: .snakeToCamel)
+            )
         }
-        return Path(
-            components: path.components
-                .map(resolvePathComponent)
-        )
+        return transformer.transform(path, rules: rules)
     }
 
     func snameToCamel(_ name: String, config: ObfuscationCamelToSnake) -> String {

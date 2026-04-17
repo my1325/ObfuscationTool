@@ -1,0 +1,29 @@
+{
+  "camelToSnake" : [
+    {
+      "prefix" : "BF_",
+      "toLowercase" : false
+    },
+    {
+      "prefix" : "bf_",
+      "toLowercase" : true
+    }
+  ],
+  "input" : "ObfuscationTool/SmokeTest/Input",
+  "keepDirectory" : true,
+  "output" : "ObfuscationTool/SmokeTest/Output",
+  "replace" : {
+    "map" : {
+      "BF_" : "ZZ_",
+      "bf_" : "zz_"
+    },
+    "onlyPrefix" : true,
+    "onlyFilename" : false
+  },
+  "shuffule" : {
+    "order" : true
+  },
+  "snameToCamel" : null,
+  "zips" : null
+}
+

@@ -1,0 +1,132 @@
+{
+  "object" : {
+    "artifacts" : [
+
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "commander",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/kylef/Commander.git",
+          "name" : "Commander"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "4a1f2fb82fb6cef613c4a25d2e38f702e4d812c2",
+            "version" : "0.9.2"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Commander"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "pathkit",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/kylef/PathKit.git",
+          "name" : "PathKit"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "3bfd2737b700b9a36565a8c94f4ad2b050a5e574",
+            "version" : "1.0.1"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "PathKit"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "spectre",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/kylef/Spectre.git",
+          "name" : "Spectre"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "26cc5e9ae0947092c7139ef7ba612e34646086c7",
+            "version" : "0.10.1"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Spectre"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "swift-syntax",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/apple/swift-syntax.git",
+          "name" : "swift-syntax"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "64889f0c732f210a935a0ad7cda38f77f876262d",
+            "version" : "509.1.1"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "swift-syntax"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "yams",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/jpsim/Yams.git",
+          "name" : "Yams"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "0d9ee7ea8c4ebd4a489ad7a73d5c6cad55d6fed3",
+            "version" : "5.0.6"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Yams"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "zip",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/marmelroy/Zip.git",
+          "name" : "Zip"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "67fa55813b9e7b3b9acee9c0ae501def28746d76",
+            "version" : "2.1.2"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Zip"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "ziparchive",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/ZipArchive/ZipArchive.git",
+          "name" : "ZipArchive"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "79d4dc9729096c6ad83dd3cee2b9f354d1b4ab7b",
+            "version" : "2.5.5"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "ZipArchive"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

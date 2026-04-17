@@ -7,6 +7,13 @@
 
 import Foundation
 
+struct ObfuscationTargets: Codable {
+    /// 是否作用于文件路径/文件名（rename / move）
+    let path: Bool?
+    /// 是否作用于文件内容（rewrite content）
+    let content: Bool?
+}
+
 struct ObfuscationReplace: Codable {
     
     let map: [String: String]?
@@ -14,15 +21,20 @@ struct ObfuscationReplace: Codable {
     let onlyPrefix: Bool?
     
     let onlyFilename: Bool?
+
+    /// 默认同时作用于 path+content；可分别关闭
+    let targets: ObfuscationTargets?
     
     init(
         _ map: [String : String]? = nil,
         onlyPrefix: Bool? = nil,
-        onlyFilename: Bool? = nil
+        onlyFilename: Bool? = nil,
+        targets: ObfuscationTargets? = nil
     ) {
         self.map = map
         self.onlyPrefix = onlyPrefix
         self.onlyFilename = onlyFilename
+        self.targets = targets
     }
 }
 
@@ -40,6 +52,9 @@ struct ObfuscationCamelToSnake: Codable {
     let prefix: String
     
     let toLowercase: Bool?
+
+    /// 默认同时作用于 path+content；可分别关闭
+    let targets: ObfuscationTargets?
 }
 
 struct ObfuscationConfig: Codable {

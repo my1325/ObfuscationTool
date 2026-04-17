@@ -10,6 +10,7 @@ import PathKit
 import Plugins
 import ProcessingFiles
 import SwiftFilePlugin
+import ObfuscationCore
 
 final class Obfuscation {
     let config: ObfuscationConfig
@@ -39,7 +40,98 @@ final class Obfuscation {
             throw ObfuscationError.inputNotExists(input.string)
         }
 
-        try run(input)
+        let outputPath = try checkOutput()
+        let rules = buildRules()
+
+        let runner = Runner()
+        let project = ProjectConfig(
+            input: input.normalize().string,
+            output: outputPath.normalize().string,
+            keepDirectory: keepDirectory,
+            rules: rules
+        )
+
+        runner.run(config: project) { _ in
+            // CLI 默认静默；需要时可在这里输出 progress/log
+        }
+    }
+
+    private func buildRules() -> [Rule] {
+        var rules: [Rule] = []
+
+        if let replace = config.replace, let map = replace.map, !map.isEmpty {
+            let applyToPath = replace.targets?.path ?? true
+            let applyToContent = replace.targets?.content ?? true
+            var targets: Set<RuleTarget> = []
+            if applyToPath { targets.insert(.path) }
+            if applyToContent { targets.insert(.content) }
+            if targets.isEmpty { targets = [.path, .content] }
+
+            rules.append(
+                Rule(
+                    enabled: true,
+                    appliesTo: targets,
+                    scope: .init(
+                        onlyPrefix: false,
+                        onlyFilename: false
+                    ),
+                    kind: .replace(map: map)
+                )
+            )
+        }
+
+        if let camelToSnake = config.camelToSnake {
+            for item in camelToSnake {
+                let applyToPath = item.targets?.path ?? true
+                let applyToContent = item.targets?.content ?? true
+                var targets: Set<RuleTarget> = []
+                if applyToPath { targets.insert(.path) }
+                if applyToContent { targets.insert(.content) }
+                if targets.isEmpty { targets = [.path, .content] }
+
+                rules.append(
+                    Rule(
+                        enabled: true,
+                        appliesTo: targets,
+                        scope: .init(),
+                        kind: .caseConvert(prefix: item.prefix, toLowercase: item.toLowercase ?? true, direction: .camelToSnake)
+                    )
+                )
+            }
+        }
+
+        if let snakeToCamel = config.snameToCamel {
+            for item in snakeToCamel {
+                let applyToPath = item.targets?.path ?? true
+                let applyToContent = item.targets?.content ?? true
+                var targets: Set<RuleTarget> = []
+                if applyToPath { targets.insert(.path) }
+                if applyToContent { targets.insert(.content) }
+                if targets.isEmpty { targets = [.path, .content] }
+
+                rules.append(
+                    Rule(
+                        enabled: true,
+                        appliesTo: targets,
+                        scope: .init(),
+                        kind: .caseConvert(prefix: item.prefix, toLowercase: item.toLowercase ?? true, direction: .snakeToCamel)
+                    )
+                )
+            }
+        }
+
+        if let shuffle = config.shuffule {
+            rules.append(
+                Rule(
+                    enabled: true,
+                    appliesTo: [.swiftStructure],
+                    scope: .init(),
+                    kind: .shuffle(orderAware: true)
+                )
+            )
+        }
+
+        return rules
     }
 
     private func checkOutput() throws -> Path {
@@ -123,9 +215,54 @@ final class Obfuscation {
         return SwiftFileProcessingPlugin(plugins: plugins)
     }
 
+    private func ocFilePlugin() -> OCFileProcessingPlugin {
+        var modes: [OCFileProcessingPlugin.HandleMode] = []
+        if let replace = config.replace {
+            let configModes: [OCFileProcessingPlugin.HandleMode] = replace.map?
+                .keys
+                .map { $0 }
+                .sorted { $0.count > $1.count }
+                .map {
+                    OCFileProcessingPlugin.HandleMode.replace(
+                        prefixOnly: replace.onlyPrefix ?? false,
+                        originString: $0,
+                        replaceString: replace.map?[$0] ?? ""
+                    )
+                } ?? []
+            modes += configModes
+        }
+
+        if let camelToSnake = config.camelToSnake, !camelToSnake.isEmpty {
+            let configModes: [OCFileProcessingPlugin.HandleMode] = camelToSnake
+                .map {
+                    OCFileProcessingPlugin.HandleMode.camelToSnake(
+                        handlePrefix: $0.prefix,
+                        toLowercase: $0.toLowercase ?? true
+                    )
+                }
+            modes += configModes
+        }
+
+        if let snameToCamel = config.snameToCamel, !snameToCamel.isEmpty {
+            let configModes: [OCFileProcessingPlugin.HandleMode] = snameToCamel
+                .map {
+                    OCFileProcessingPlugin.HandleMode.snakeToCamel(
+                        handlePrefix: $0.prefix,
+                        toLowercase: $0.toLowercase ?? true
+                    )
+                }
+            modes += configModes
+        }
+
+        return OCFileProcessingPlugin(modes)
+    }
+
     private func run(_ filePath: Path, onlyFilename: Bool = false) throws {
         let processingManager = ProcessingManager(path: filePath)
         processingManager.registerPlugin(swiftFilePlugins(), forFileType: .swift)
+        let ocPlugin = ocFilePlugin()
+        processingManager.registerPlugin(ocPlugin, forFileType: .header)
+        processingManager.registerPlugin(ocPlugin, forFileType: .implemention)
         if let replace = config.replace {
             processingManager.registerPlugin(NameReplacePlugin(replace), forFileType: .all)
         }
@@ -156,18 +293,20 @@ final class Obfuscation {
 
     private func getOutputPath(_ file: ProcessingFile) throws -> Path {
         guard keepDirectory else { return output }
-        let originPath = file.filePath.string
-        let index = originPath.index(originPath.startIndex, offsetBy: input.string.count)
-        let fileRelativePath = originPath.suffix(from: index)
-        return Path(output.string + String(fileRelativePath))
-            .parent()
+        let originPath = file.filePath.normalize().string
+        let inputPath = input.normalize().string
+        guard originPath.hasPrefix(inputPath) else {
+            return output
+        }
+        let relative = originPath.dropFirst(inputPath.count)
+        return Path(output.normalize().string + String(relative)).parent()
     }
 
     private func saveFile(_ file: ProcessingFile, in path: Path) throws {
         let newPath = path + file.output.lastComponent
         try newPath.parent().mkpath()
 
-        if file.filePath != newPath, newPath.exists {
+        if newPath.exists {
             try newPath.delete()
         }
 
@@ -177,9 +316,7 @@ final class Obfuscation {
             try newPath.write(file.getData())
         }
 
-        if file.filePath != newPath, file.filePath.exists {
-            try file.filePath.delete()
-        }
+        // 默认不删除源文件：输出到新目录时保持输入目录只读更安全
     }
 }
 

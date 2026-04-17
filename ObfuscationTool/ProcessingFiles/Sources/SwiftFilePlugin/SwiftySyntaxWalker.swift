@@ -130,4 +130,8 @@ public final class SwiftSyntaxWalker: SyntaxVisitor {
     public override func visit(_ node: OperatorDeclSyntax) -> SyntaxVisitorContinueKind {
         appnedNode(node, supportType: .operator)
     }
+
+    public override func visit(_ node: MacroDeclSyntax) -> SyntaxVisitorContinueKind {
+        appnedNode(node, supportType: .macro)
+    }
 }

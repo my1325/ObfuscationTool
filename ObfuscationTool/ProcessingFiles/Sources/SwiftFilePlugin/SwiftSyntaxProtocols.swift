@@ -23,7 +23,7 @@ public extension CustomNamedDeclSyntax where Self: SyntaxProtocol {
     }
 
     func contentForToken(_ token: SyntaxProtocol) -> String {
-        String(data: Data(token.syntaxTextBytes), encoding: .utf8)!
+        String(decoding: token.syntaxTextBytes, as: UTF8.self)
     }
 }
 
@@ -87,6 +87,7 @@ extension CustomCodeContainerSyntaxProtocol {
         case is ProtocolDeclSyntax: return .protocol
         case is ExtensionDeclSyntax: return .extension
         case is OperatorDeclSyntax: return .operator
+        case is MacroDeclSyntax: return .block
         default: return .block
         }
     }
@@ -127,6 +128,8 @@ extension EnumDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtoc
 extension ExtensionDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
 extension OperatorDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
 
+extension MacroDeclSyntax: CustomNamedDeclSyntax, CustomCodeContainerSyntaxProtocol {}
+
 // MARK: - -
 
 public struct CodeContainerSyntax<S: CustomCodeContainerSyntaxProtocol & CustomNamedDeclSyntax>: CodeContainerProtocol where S: DeclSyntaxProtocol {
@@ -158,7 +161,7 @@ extension TokenSyntax: @retroactive CodeRawWordProtocol {
     }
     
     public var content: String {
-        String(data: Data(syntaxTextBytes), encoding: .utf8)!
+        String(decoding: syntaxTextBytes, as: UTF8.self)
     }
 }
 
@@ -232,8 +235,14 @@ extension SyntaxProtocol {
             return CodeSyntax(syntaxNode: node)
         } else if let node = self as? ActorDeclSyntax {
             return CodeContainerSyntax(syntaxNode: node)
+        } else if let node = self as? MacroDeclSyntax {
+            return CodeContainerSyntax(syntaxNode: node)
         } else {
-            fatalError("unknown type \(self)")
+            return Code(
+                type: .line,
+                words: [CodeRawWord(identifier: .word, content: String(describing: self))],
+                rawName: ""
+            )
         }
     }
 }
