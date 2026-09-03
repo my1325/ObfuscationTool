@@ -56,6 +56,24 @@ final class Obfuscation {
         }
     }
 
+    func scanPrefixes() throws -> PrefixScanResult {
+        let input = input
+        if !input.exists {
+            throw ObfuscationError.inputNotExists(input.string)
+        }
+        let rules = buildRules()
+        return PrefixScanner().scan(inputRoot: input, rules: rules)
+    }
+
+    func validate() throws {
+        let input = input
+        if !input.exists {
+            throw ObfuscationError.inputNotExists(input.string)
+        }
+        _ = try checkOutput()
+        _ = buildRules()
+    }
+
     private func buildRules() -> [Rule] {
         var rules: [Rule] = []
 
@@ -136,7 +154,7 @@ final class Obfuscation {
 
     private func checkOutput() throws -> Path {
         let outputPath = output
-        guard outputPath.isDirectory else {
+        if outputPath.exists && !outputPath.isDirectory {
             throw ObfuscationError.outputIsNotValid(outputPath.string)
         }
 

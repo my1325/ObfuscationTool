@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "obfuscation-tool": {
+      "command": "node",
+      "args": ["${workspaceFolder}/plugin/mcp-server/dist/index.js"]
+    }
+  }
+}

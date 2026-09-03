@@ -22,6 +22,12 @@ public enum ContentBackendError: Error, CustomStringConvertible {
 public struct ContentProcessor: Sendable {
     public init() {}
 
+    /// `*.xcassets` 下的 `Contents.json`（Xcode 资源目录，文件名大小写不敏感）。
+    private func isAssetCatalogContentsJSON(_ path: Path) -> Bool {
+        guard path.lastComponent.lowercased() == "contents.json" else { return false }
+        return path.components.contains { $0.lowercased().hasSuffix(".xcassets") }
+    }
+
     public func process(
         path: Path,
         data: Data,
@@ -38,6 +44,14 @@ public struct ContentProcessor: Sendable {
             return try processOC(data: data, rules: activeContentRules)
         case "strings":
             return try processPlainText(data: data, rules: activeContentRules)
+        case "json":
+            if isAssetCatalogContentsJSON(path) {
+                let rulesForJSON = rules.filter {
+                    $0.enabled && ($0.appliesTo.contains(.content) || $0.appliesTo.contains(.path))
+                }
+                return try processPlainText(data: data, rules: rulesForJSON)
+            }
+            return data
         default:
             return data
         }

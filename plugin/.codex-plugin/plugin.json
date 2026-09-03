@@ -1,0 +1,25 @@
+{
+  "name": "obfuscation-tool",
+  "version": "1.0.0",
+  "description": "Swift/Objective-C code obfuscation for Cursor and Codex agents.",
+  "author": {
+    "name": "ObfuscationTool"
+  },
+  "repository": "https://github.com/example/ObfuscationTool",
+  "license": "MIT",
+  "keywords": ["swift", "objective-c", "obfuscation", "ios", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Obfuscation Tool",
+    "shortDescription": "Obfuscate Swift and Objective-C projects",
+    "longDescription": "Bundle MCP tools and agent skills for prefix replacement, case conversion, Swift structure shuffling, and prefix scanning.",
+    "developerName": "ObfuscationTool",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "Scan my Swift project for prefixes not covered by obfuscation.json.",
+      "Run obfuscation on this iOS project using the bundled example config."
+    ]
+  }
+}

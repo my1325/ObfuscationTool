@@ -30,7 +30,46 @@ let commandGroup = Group {
             try obTool.run()
             print("run success")
         } catch {
-            print("\(error)")
+            fputs("\(error)\n", stderr)
+            exit(1)
+        }
+    }
+
+    $0.command(
+        "scan",
+        Option("config", default: "obfuscation.json", flag: "c", description: "配置文件路径（JSON）")
+    ) { configPath in
+        do {
+            let configFile = Path.current + configPath
+            guard configFile.exists else {
+                throw ObfuscationError.inputNotExists(configFile.string)
+            }
+            let config = try loadConfig(from: configFile)
+            let obTool = Obfuscation(config: config)
+            let result = try obTool.scanPrefixes()
+            print(try encodePrefixScan(result))
+        } catch {
+            fputs("\(error)\n", stderr)
+            exit(1)
+        }
+    }
+
+    $0.command(
+        "validate",
+        Option("config", default: "obfuscation.json", flag: "c", description: "配置文件路径（JSON）")
+    ) { configPath in
+        do {
+            let configFile = Path.current + configPath
+            guard configFile.exists else {
+                throw ObfuscationError.inputNotExists(configFile.string)
+            }
+            let config = try loadConfig(from: configFile)
+            let obTool = Obfuscation(config: config)
+            try obTool.validate()
+            print("config is valid")
+        } catch {
+            fputs("\(error)\n", stderr)
+            exit(1)
         }
     }
 }

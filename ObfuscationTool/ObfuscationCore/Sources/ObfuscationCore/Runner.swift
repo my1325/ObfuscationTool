@@ -117,7 +117,13 @@ public final class Runner {
                         data: data,
                         rules: stage1Rules
                     )
-                    try outPath.write(processed)
+                    try writeStage1RegularFileReplacingSourceIfNeeded(
+                        processed: processed,
+                        source: file,
+                        output: outPath,
+                        inputRoot: inputRoot,
+                        outputRoot: outputRoot
+                    )
                     summary.writtenFiles += 1
                     onEvent(.didWrite(path: outPath.string))
                 }
@@ -196,8 +202,9 @@ public final class Runner {
             }
             let p = Path(base + "/" + rel)
             if p.isDirectory {
-                // 目录也作为处理对象（用于资源目录整体复制）
-                if includeResourceDirs, let ext = p.extension, ["bundle", "xcassets", "lproj"].contains(ext) {
+                // 目录也作为处理对象（用于 bundle / lproj 整体复制）。
+                // xcassets 不整包复制：进入内部逐文件处理，以便 imageset 目录名与 Contents.json 随规则改名。
+                if includeResourceDirs, let ext = p.extension, ["bundle", "lproj"].contains(ext) {
                     files.append(p)
                     enumerator?.skipDescendants()
                 }
@@ -217,6 +224,16 @@ public final class Runner {
         inputFile: Path,
         rules: [Rule]
     ) throws -> Path {
+        if keepDirectory, let xcRoot = xcassetsRoot(containing: inputFile, under: inputRoot) {
+            return computeOutputPathInsideXcassets(
+                inputRoot: inputRoot,
+                outputRoot: outputRoot,
+                xcRoot: xcRoot,
+                inputFile: inputFile,
+                rules: rules
+            )
+        }
+
         let relativeParent: Path = {
             guard keepDirectory else { return outputRoot }
             let origin = inputFile.parent().normalize().string
@@ -230,10 +247,113 @@ public final class Runner {
         return relativeParent + transformedName
     }
 
+    /// 自 `path` 向上查找位于 `root` 之下的 `*.xcassets` 根目录。
+    private func xcassetsRoot(containing path: Path, under root: Path) -> Path? {
+        var node = path
+        let rootNorm = root.normalize().string
+        while true {
+            if let ext = node.extension, ext.lowercased() == "xcassets" {
+                let n = node.normalize().string
+                guard n.hasPrefix(rootNorm) else { return nil }
+                return node.normalize()
+            }
+            let parent = node.parent()
+            if parent == node || parent.string.count < rootNorm.count { break }
+            node = parent
+        }
+        return nil
+    }
+
+    /// 资源目录内路径：对「相对 inputRoot 到 xcassets 根」与「xcassets 内相对路径」整段做路径规则变换，使 imageset / appiconset 等文件夹名与文件一致。
+    private func computeOutputPathInsideXcassets(
+        inputRoot: Path,
+        outputRoot: Path,
+        xcRoot: Path,
+        inputFile: Path,
+        rules: [Rule]
+    ) -> Path {
+        let inRoot = inputRoot.normalize().string
+        let xcNorm = xcRoot.normalize().string
+        let fileNorm = inputFile.normalize().string
+
+        let relToXc = String(xcNorm.dropFirst(inRoot.count))
+        let relToXcTrimmed = relToXc.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let prefixTransformed: String = {
+            guard !relToXcTrimmed.isEmpty else { return "" }
+            let p = Path(relToXcTrimmed)
+            return pathTransformer.transform(p, rules: rules).string
+        }()
+
+        let inner = String(fileNorm.dropFirst(xcNorm.count)).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let innerTransformed: String = {
+            guard !inner.isEmpty else { return "" }
+            return pathTransformer.transform(Path(inner), rules: rules).string
+        }()
+
+        let outBase = outputRoot.normalize().string
+        var out = outBase
+        if !prefixTransformed.isEmpty {
+            out += prefixTransformed.hasPrefix("/") ? prefixTransformed : "/" + prefixTransformed
+        }
+        if !innerTransformed.isEmpty {
+            out += innerTransformed.hasPrefix("/") ? innerTransformed : "/" + innerTransformed
+        }
+        return Path(out)
+    }
+
     private func copyDirectory(from src: Path, to dst: Path) throws {
         let fm = FileManager.default
         if dst.exists { try dst.delete() }
         try fm.copyItem(atPath: src.string, toPath: dst.string)
+    }
+
+    /// 仅针对普通文件：按「每个文件」判断是否原路径输出并处理源文件。
+    /// - 该文件输出路径与源路径相同：先写入同目录临时文件，再删除源路径，再移回目标路径（避免原地覆盖语义不清）。
+    /// - 输出路径不同且输入/输出同根：写入新路径后删除旧源路径，避免改名残留。
+    private func writeStage1RegularFileReplacingSourceIfNeeded(
+        processed: Data,
+        source: Path,
+        output: Path,
+        inputRoot: Path,
+        outputRoot: Path
+    ) throws {
+        let srcKey = source.normalize().string
+        let outKey = output.normalize().string
+
+        if srcKey == outKey {
+            let parent = output.parent()
+            try parent.mkpath()
+            let tmp = parent + ".\(UUID().uuidString).obfuscationtmp"
+            try tmp.write(processed)
+            if source.exists {
+                try source.delete()
+            }
+            let fm = FileManager.default
+            try fm.moveItem(atPath: tmp.string, toPath: output.string)
+            return
+        }
+
+        try output.parent().mkpath()
+        try output.write(processed)
+        try deleteSourceAfterInPlaceRenameIfNeeded(
+            inputRoot: inputRoot,
+            outputRoot: outputRoot,
+            source: source,
+            output: output
+        )
+    }
+
+    /// 同根目录且该文件输出路径与源路径不同时，写入成功后删除旧源路径。
+    private func deleteSourceAfterInPlaceRenameIfNeeded(
+        inputRoot: Path,
+        outputRoot: Path,
+        source: Path,
+        output: Path
+    ) throws {
+        guard inputRoot.normalize().string == outputRoot.normalize().string else { return }
+        guard source.normalize().string != output.normalize().string else { return }
+        guard source.exists else { return }
+        try source.delete()
     }
 }
 

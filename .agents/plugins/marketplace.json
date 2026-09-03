@@ -1,0 +1,20 @@
+{
+  "name": "obfuscation-tool",
+  "interface": {
+    "displayName": "Obfuscation Tool Plugins"
+  },
+  "plugins": [
+    {
+      "name": "obfuscation-tool",
+      "source": {
+        "source": "local",
+        "path": "./plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

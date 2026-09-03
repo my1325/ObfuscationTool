@@ -21,6 +21,7 @@
 		B7D1EFA92CB529E000C49D1A /* AssetsTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D1EFA82CB529E000C49D1A /* AssetsTool.swift */; };
 		B7D3D0292AC3CBCC00B88A9B /* ObfuscationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D3D0282AC3CBCC00B88A9B /* ObfuscationError.swift */; };
 		B7D3D02B2AC3D9C200B88A9B /* Obfuscation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D3D02A2AC3D9C200B88A9B /* Obfuscation.swift */; };
+		B8PLUGIN2F00014100ABCD12 /* PrefixScanJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8PLUGIN2F00014000ABCD12 /* PrefixScanJSON.swift */; };
 		B7D3D0472AC3F5AC00B88A9B /* Commander in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0462AC3F5AC00B88A9B /* Commander */; };
 		B7D3D0492AC3F5AD00B88A9B /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = B7D3D0482AC3F5AD00B88A9B /* Yams */; };
 		B7E12AE12CAA7D6000FD3111 /* NameReplacePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7E12AE02CAA7D6000FD3111 /* NameReplacePlugin.swift */; };
@@ -71,6 +72,7 @@
 		B7D1EFA82CB529E000C49D1A /* AssetsTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsTool.swift; sourceTree = "<group>"; };
 		B7D3D0282AC3CBCC00B88A9B /* ObfuscationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObfuscationError.swift; sourceTree = "<group>"; };
 		B7D3D02A2AC3D9C200B88A9B /* Obfuscation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Obfuscation.swift; sourceTree = "<group>"; };
+		B8PLUGIN2F00014000ABCD12 /* PrefixScanJSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefixScanJSON.swift; sourceTree = "<group>"; };
 		B7E12AE02CAA7D6000FD3111 /* NameReplacePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameReplacePlugin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -214,6 +216,7 @@
 				B77B6D152AC2A7B800F172F3 /* ObfuscationConfig.swift */,
 				B7D3D0282AC3CBCC00B88A9B /* ObfuscationError.swift */,
 				B7D3D02A2AC3D9C200B88A9B /* Obfuscation.swift */,
+				B8PLUGIN2F00014000ABCD12 /* PrefixScanJSON.swift */,
 			);
 			path = Obfuscation;
 			sourceTree = "<group>";
@@ -343,6 +346,7 @@
 				B77B6D122AC28C6500F172F3 /* YAMLHandler.swift in Sources */,
 				B7D3D0292AC3CBCC00B88A9B /* ObfuscationError.swift in Sources */,
 				B77B6D162AC2A7B800F172F3 /* ObfuscationConfig.swift in Sources */,
+				B8PLUGIN2F00014100ABCD12 /* PrefixScanJSON.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

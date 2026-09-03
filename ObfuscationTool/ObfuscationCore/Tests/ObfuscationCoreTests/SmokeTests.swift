@@ -18,6 +18,21 @@ final class SmokeTests: XCTestCase {
         XCTAssertEqual(out.string, "/A/BF_Folder/ZZ_File.swift")
     }
 
+    /// xcassets 内相对路径多段时，路径规则应作用到 imageset 等目录名（需非 onlyFilename 限制整条路径末段）。
+    func testAssetCatalogInnerPathTransformsImagesetFolder() {
+        let transformer = PathTransformer()
+        let rules: [Rule] = [
+            .init(
+                appliesTo: [.path],
+                scope: .init(onlyPrefix: true, onlyFilename: false),
+                kind: .replace(map: ["BF_": "ZZ_"])
+            ),
+        ]
+        let inner = Path("Tab/BF_Home.imageset/Contents.json")
+        let out = transformer.transform(inner, rules: rules)
+        XCTAssertTrue(out.string.contains("ZZ_Home.imageset"), "got: \(out.string)")
+    }
+
     func testOCSkipsCommentsAndStrings() throws {
         let processor = ContentProcessor()
         let rules: [Rule] = [
