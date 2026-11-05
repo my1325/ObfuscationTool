@@ -26,8 +26,8 @@ struct RunView: View {
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 4) {
-                    ForEach(Array(model.logLines.enumerated()), id: \.offset) { _, line in
-                        Text(line)
+                    ForEach(model.logLines.indices, id: \.self) { index in
+                        Text(model.logLines[index])
                             .font(.system(.body, design: .monospaced))
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }

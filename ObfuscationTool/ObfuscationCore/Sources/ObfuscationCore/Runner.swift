@@ -62,9 +62,13 @@ public final class Runner {
 
         let inputRoot = Path(config.input)
         let outputRoot = Path(config.output)
+        let inputRootNorm = inputRoot.normalize().string
+        let outputRootNorm = outputRoot.normalize().string
+        let sameRoot = inputRootNorm == outputRootNorm
+        var ensuredDirectories: Set<String> = []
 
         do {
-            try outputRoot.mkpath()
+            try ensureDirectory(outputRoot, ensured: &ensuredDirectories)
         } catch {
             onEvent(.didFail(path: outputRoot.string, message: "\(error)"))
             onEvent(.didFinish(summary: summary))
@@ -81,51 +85,65 @@ public final class Runner {
         }
 
         // Stage 1: Replace + Shuffle（以及其他非 CaseConvert）
-        let stage1Files: [Path] = enumerateFiles(inputRoot, includeResourceDirs: true)
+        let stage1Files = enumerateFiles(inputRoot, includeResourceDirs: true)
         summary.totalFiles = stage1Files.count
         onEvent(.willStart(totalFiles: stage1Files.count))
 
-        for (idx, file) in stage1Files.enumerated() {
+        for (idx, entry) in stage1Files.enumerated() {
             if token?.isCancelled == true {
                 onEvent(.log(message: "Cancelled"))
                 onEvent(.didFinish(summary: summary))
                 return
             }
 
+            let file = entry.path
             onEvent(.willProcess(path: file.string, index: idx + 1, total: stage1Files.count))
             summary.processedFiles += 1
 
             do {
                 let outPath = try computeOutputPath(
                     inputRoot: inputRoot,
+                    inputRootNorm: inputRootNorm,
                     outputRoot: outputRoot,
+                    outputRootNorm: outputRootNorm,
                     keepDirectory: config.keepDirectory,
                     inputFile: file,
                     rules: stage1Rules
                 )
 
-                try outPath.parent().mkpath()
+                try ensureDirectory(outPath.parent(), ensured: &ensuredDirectories)
 
-                if file.isDirectory {
+                if entry.isDirectory {
                     try copyDirectory(from: file, to: outPath)
                     summary.writtenFiles += 1
                     onEvent(.didWrite(path: outPath.string))
                 } else {
-                    let data: Data = try file.read()
-                    let processed = try contentProcessor.process(
-                        path: file,
-                        data: data,
-                        rules: stage1Rules
-                    )
-                    try writeStage1RegularFileReplacingSourceIfNeeded(
-                        processed: processed,
-                        source: file,
-                        output: outPath,
-                        inputRoot: inputRoot,
-                        outputRoot: outputRoot
-                    )
-                    summary.writtenFiles += 1
-                    onEvent(.didWrite(path: outPath.string))
+                    let sourceKey = file.normalize().string
+                    let outputKey = outPath.normalize().string
+                    if sourceKey == outputKey,
+                       !contentProcessor.mayRewriteContent(path: file, rules: stage1Rules) {
+                        // 路径相同，且处理器会原样交回字节。
+                        summary.writtenFiles += 1
+                        onEvent(.didWrite(path: outPath.string))
+                    } else {
+                        let data: Data = try file.read()
+                        let processed = try contentProcessor.process(
+                            path: file,
+                            data: data,
+                            rules: stage1Rules
+                        )
+                        try writeStage1RegularFileReplacingSourceIfNeeded(
+                            processed: processed,
+                            source: file,
+                            output: outPath,
+                            sourceKey: sourceKey,
+                            outputKey: outputKey,
+                            sameRoot: sameRoot,
+                            ensured: &ensuredDirectories
+                        )
+                        summary.writtenFiles += 1
+                        onEvent(.didWrite(path: outPath.string))
+                    }
                 }
             } catch {
                 summary.errors += 1
@@ -141,14 +159,16 @@ public final class Runner {
 
         onEvent(.log(message: "Stage2: CaseConvert"))
         let stage2InputRoot = outputRoot
-        let stage2Files: [Path] = enumerateFiles(stage2InputRoot, includeResourceDirs: false)
+        let stage2RootNorm = outputRootNorm
+        let stage2Files = enumerateFiles(stage2InputRoot, includeResourceDirs: false)
 
-        for (idx, file) in stage2Files.enumerated() {
+        for (idx, entry) in stage2Files.enumerated() {
             if token?.isCancelled == true {
                 onEvent(.log(message: "Cancelled"))
                 break
             }
 
+            let file = entry.path
             onEvent(.willProcess(path: file.string, index: idx + 1, total: stage2Files.count))
             summary.processedFiles += 1
 
@@ -156,11 +176,22 @@ public final class Runner {
                 // stage2 直接在输出目录内做 in-place（可能发生 rename）
                 let outPath = try computeOutputPath(
                     inputRoot: stage2InputRoot,
+                    inputRootNorm: stage2RootNorm,
                     outputRoot: stage2InputRoot,
+                    outputRootNorm: stage2RootNorm,
                     keepDirectory: true,
                     inputFile: file,
                     rules: caseConvertRules
                 )
+
+                let sourceKey = file.normalize().string
+                let outputKey = outPath.normalize().string
+                if sourceKey == outputKey,
+                   !contentProcessor.mayRewriteContent(path: file, rules: caseConvertRules) {
+                    summary.writtenFiles += 1
+                    onEvent(.didWrite(path: outPath.string))
+                    continue
+                }
 
                 let data: Data = try file.read()
                 let processed = try contentProcessor.process(
@@ -168,13 +199,13 @@ public final class Runner {
                     data: data,
                     rules: caseConvertRules
                 )
-                try outPath.parent().mkpath()
+                try ensureDirectory(outPath.parent(), ensured: &ensuredDirectories)
                 if outPath.exists { try outPath.delete() }
                 try outPath.write(processed)
                 summary.writtenFiles += 1
                 onEvent(.didWrite(path: outPath.string))
 
-                if outPath.normalize() != file.normalize(), file.exists {
+                if outputKey != sourceKey, file.exists {
                     try file.delete()
                 }
             } catch {
@@ -186,48 +217,34 @@ public final class Runner {
         onEvent(.didFinish(summary: summary))
     }
 
-    private func enumerateFiles(_ root: Path, includeResourceDirs: Bool) -> [Path] {
+    private func enumerateFiles(_ root: Path, includeResourceDirs: Bool) -> [EnumeratedEntry] {
         guard root.exists else { return [] }
-        if root.isFile { return [root] }
+        if root.isFile { return [EnumeratedEntry(path: root, isDirectory: false)] }
 
-        var files: [Path] = []
-        let fm = FileManager.default
-        let base = root.string
-        let enumerator = fm.enumerator(atPath: base)
-        while let rel = enumerator?.nextObject() as? String {
-            guard !rel.isEmpty else { continue }
-            if rel.split(separator: "/").contains(where: { $0.hasPrefix(".") }) {
-                enumerator?.skipDescendants()
-                continue
-            }
-            let p = Path(base + "/" + rel)
-            if p.isDirectory {
-                // 目录也作为处理对象（用于 bundle / lproj 整体复制）。
-                // xcassets 不整包复制：进入内部逐文件处理，以便 imageset 目录名与 Contents.json 随规则改名。
-                if includeResourceDirs, let ext = p.extension, ["bundle", "lproj"].contains(ext) {
-                    files.append(p)
-                    enumerator?.skipDescendants()
-                }
-                continue
-            }
-            if p.isFile {
-                files.append(p)
-            }
-        }
-        return files
+        // bundle / lproj 整包复制。xcassets 不整包复制，进入内部逐文件处理。
+        return TreeEnumeration.collect(
+            under: root,
+            includeDirectories: { directory in
+                guard includeResourceDirs, let ext = directory.extension else { return false }
+                return ext == "bundle" || ext == "lproj"
+            },
+            includeFiles: { _ in true }
+        )
     }
 
     private func computeOutputPath(
         inputRoot: Path,
+        inputRootNorm: String,
         outputRoot: Path,
+        outputRootNorm: String,
         keepDirectory: Bool,
         inputFile: Path,
         rules: [Rule]
     ) throws -> Path {
-        if keepDirectory, let xcRoot = xcassetsRoot(containing: inputFile, under: inputRoot) {
+        if keepDirectory, let xcRoot = xcassetsRoot(containing: inputFile, underRootNorm: inputRootNorm) {
             return computeOutputPathInsideXcassets(
-                inputRoot: inputRoot,
-                outputRoot: outputRoot,
+                inputRootNorm: inputRootNorm,
+                outputRootNorm: outputRootNorm,
                 xcRoot: xcRoot,
                 inputFile: inputFile,
                 rules: rules
@@ -237,10 +254,9 @@ public final class Runner {
         let relativeParent: Path = {
             guard keepDirectory else { return outputRoot }
             let origin = inputFile.parent().normalize().string
-            let base = inputRoot.normalize().string
-            guard origin.hasPrefix(base) else { return outputRoot }
-            let rel = origin.dropFirst(base.count)
-            return Path(outputRoot.normalize().string + String(rel))
+            guard origin.hasPrefix(inputRootNorm) else { return outputRoot }
+            let rel = origin.dropFirst(inputRootNorm.count)
+            return Path(outputRootNorm + String(rel))
         }()
 
         let transformedName = pathTransformer.transform(inputFile, rules: rules).lastComponent
@@ -248,14 +264,13 @@ public final class Runner {
     }
 
     /// 自 `path` 向上查找位于 `root` 之下的 `*.xcassets` 根目录。
-    private func xcassetsRoot(containing path: Path, under root: Path) -> Path? {
+    private func xcassetsRoot(containing path: Path, underRootNorm rootNorm: String) -> Path? {
         var node = path
-        let rootNorm = root.normalize().string
         while true {
             if let ext = node.extension, ext.lowercased() == "xcassets" {
-                let n = node.normalize().string
-                guard n.hasPrefix(rootNorm) else { return nil }
-                return node.normalize()
+                let normalized = node.normalize()
+                guard normalized.string.hasPrefix(rootNorm) else { return nil }
+                return normalized
             }
             let parent = node.parent()
             if parent == node || parent.string.count < rootNorm.count { break }
@@ -266,17 +281,16 @@ public final class Runner {
 
     /// 资源目录内路径：对「相对 inputRoot 到 xcassets 根」与「xcassets 内相对路径」整段做路径规则变换，使 imageset / appiconset 等文件夹名与文件一致。
     private func computeOutputPathInsideXcassets(
-        inputRoot: Path,
-        outputRoot: Path,
+        inputRootNorm: String,
+        outputRootNorm: String,
         xcRoot: Path,
         inputFile: Path,
         rules: [Rule]
     ) -> Path {
-        let inRoot = inputRoot.normalize().string
-        let xcNorm = xcRoot.normalize().string
+        let xcNorm = xcRoot.string
         let fileNorm = inputFile.normalize().string
 
-        let relToXc = String(xcNorm.dropFirst(inRoot.count))
+        let relToXc = String(xcNorm.dropFirst(inputRootNorm.count))
         let relToXcTrimmed = relToXc.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         let prefixTransformed: String = {
             guard !relToXcTrimmed.isEmpty else { return "" }
@@ -290,8 +304,7 @@ public final class Runner {
             return pathTransformer.transform(Path(inner), rules: rules).string
         }()
 
-        let outBase = outputRoot.normalize().string
-        var out = outBase
+        var out = outputRootNorm
         if !prefixTransformed.isEmpty {
             out += prefixTransformed.hasPrefix("/") ? prefixTransformed : "/" + prefixTransformed
         }
@@ -299,6 +312,13 @@ public final class Runner {
             out += innerTransformed.hasPrefix("/") ? innerTransformed : "/" + innerTransformed
         }
         return Path(out)
+    }
+
+    private func ensureDirectory(_ path: Path, ensured: inout Set<String>) throws {
+        let key = path.string
+        if ensured.contains(key) { return }
+        try path.mkpath()
+        ensured.insert(key)
     }
 
     private func copyDirectory(from src: Path, to dst: Path) throws {
@@ -314,15 +334,14 @@ public final class Runner {
         processed: Data,
         source: Path,
         output: Path,
-        inputRoot: Path,
-        outputRoot: Path
+        sourceKey: String,
+        outputKey: String,
+        sameRoot: Bool,
+        ensured: inout Set<String>
     ) throws {
-        let srcKey = source.normalize().string
-        let outKey = output.normalize().string
-
-        if srcKey == outKey {
+        if sourceKey == outputKey {
             let parent = output.parent()
-            try parent.mkpath()
+            try ensureDirectory(parent, ensured: &ensured)
             let tmp = parent + ".\(UUID().uuidString).obfuscationtmp"
             try tmp.write(processed)
             if source.exists {
@@ -333,27 +352,11 @@ public final class Runner {
             return
         }
 
-        try output.parent().mkpath()
+        try ensureDirectory(output.parent(), ensured: &ensured)
         try output.write(processed)
-        try deleteSourceAfterInPlaceRenameIfNeeded(
-            inputRoot: inputRoot,
-            outputRoot: outputRoot,
-            source: source,
-            output: output
-        )
-    }
-
-    /// 同根目录且该文件输出路径与源路径不同时，写入成功后删除旧源路径。
-    private func deleteSourceAfterInPlaceRenameIfNeeded(
-        inputRoot: Path,
-        outputRoot: Path,
-        source: Path,
-        output: Path
-    ) throws {
-        guard inputRoot.normalize().string == outputRoot.normalize().string else { return }
-        guard source.normalize().string != output.normalize().string else { return }
-        guard source.exists else { return }
-        try source.delete()
+        if sameRoot, sourceKey != outputKey, source.exists {
+            try source.delete()
+        }
     }
 }
 
