@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UniformTypeIdentifiers
 import ObfuscationCore
 import PathKit
 import Combine
@@ -31,13 +32,35 @@ final class StudioModel: ObservableObject {
     @Published var isRunning: Bool = false
     @Published var progressText: String = ""
     @Published var logLines: [String] = []
+    @Published var lastRunSummary: RunSummary?
+    @Published var bannerMessage: String?
+    @Published var configURL: URL?
 
     private var cancellationToken: CancellationToken?
     private var prefixScanTask: Task<Void, Never>?
     private var cancellables: Set<AnyCancellable> = []
 
     var windowTitle: String {
-        "ObfuscationStudio"
+        let name = (config.input as NSString).lastPathComponent
+        return name.isEmpty ? "混淆" : "混淆 · \(name)"
+    }
+
+    var uncoveredPrefixCount: Int {
+        guard let result = prefixScanResult else { return 0 }
+        var seen = Set<String>()
+        for hits in result.hitsByKind.values {
+            for hit in hits where hit.count > 0 {
+                seen.insert(hit.prefix)
+            }
+        }
+        return seen.count
+    }
+
+    func replacementAlreadyHas(_ prefix: String) -> Bool {
+        config.rules.contains { rule in
+            guard case let .replace(map) = rule.kind else { return false }
+            return map[prefix] != nil
+        }
     }
 
     init() {
@@ -71,6 +94,65 @@ final class StudioModel: ObservableObject {
         prefixScanResult = nil
         logLines = []
         progressText = ""
+        lastRunSummary = nil
+        bannerMessage = nil
+        configURL = nil
+        sidebarSelection = .config
+    }
+
+    /// 把扫描到的前缀放进唯一的替换规则。已有的替换结果不覆盖。
+    func adoptPrefix(_ prefix: String) {
+        let trimmed = prefix.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        ensureSingletonRule(.replace)
+        guard let idx = config.rules.firstIndex(where: {
+            if case .replace = $0.kind { return true }
+            return false
+        }) else { return }
+        guard case var .replace(map) = config.rules[idx].kind else { return }
+        if map[trimmed] != nil {
+            bannerMessage = "\(trimmed) 已在替换规则里"
+        } else {
+            map[trimmed] = ""
+            config.rules[idx].kind = .replace(map: map)
+            bannerMessage = "已加入 \(trimmed)，请填写要换成的前缀"
+        }
+        selectedRuleID = config.rules[idx].id
+        sidebarSelection = .rules
+    }
+
+    func presentOpenPanel() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowedContentTypes = [.json]
+        panel.begin { [weak self] response in
+            guard response == .OK, let url = panel.url else { return }
+            DispatchQueue.main.async {
+                self?.loadConfig(from: url)
+            }
+        }
+    }
+
+    func saveConfigInteractively() {
+        if let configURL {
+            saveConfig(to: configURL)
+        } else {
+            presentSavePanel()
+        }
+    }
+
+    func presentSavePanel() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = configURL?.lastPathComponent ?? "obfuscation.json"
+        panel.begin { [weak self] response in
+            guard response == .OK, let url = panel.url else { return }
+            DispatchQueue.main.async {
+                self?.saveConfig(to: url)
+            }
+        }
     }
 
     func scanPrefixes() {
@@ -199,17 +281,20 @@ final class StudioModel: ObservableObject {
             config = try ConfigIO.load(from: url)
             removeDuplicateSingletonRules()
             selectedRuleID = config.rules.first?.id
+            configURL = url
+            bannerMessage = "已打开 \(url.lastPathComponent)"
         } catch {
-            logLines.append("Load failed: \(error)")
+            bannerMessage = "打开失败：\(error)"
         }
     }
 
     func saveConfig(to url: URL) {
         do {
             try ConfigIO.save(config, to: url)
-            logLines.append("Saved: \(url.path)")
+            configURL = url
+            bannerMessage = "已保存 \(url.lastPathComponent)"
         } catch {
-            logLines.append("Save failed: \(error)")
+            bannerMessage = "保存失败：\(error)"
         }
     }
 
@@ -236,6 +321,8 @@ final class StudioModel: ObservableObject {
         isRunning = true
         logLines = []
         progressText = ""
+        lastRunSummary = nil
+        bannerMessage = nil
 
         let token = CancellationToken()
         cancellationToken = token
@@ -274,6 +361,7 @@ final class StudioModel: ObservableObject {
         case let .didFail(path, message):
             logLines.append("Fail: \(path) - \(message)")
         case let .didFinish(summary):
+            lastRunSummary = summary
             logLines.append("Finish: processed=\(summary.processedFiles) written=\(summary.writtenFiles) errors=\(summary.errors)")
         }
     }
