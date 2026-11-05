@@ -34,6 +34,7 @@ final class StudioModel: ObservableObject {
 
     private var cancellationToken: CancellationToken?
     private var prefixScanTask: Task<Void, Never>?
+    private var prefixScanGeneration = 0
     private var cancellables: Set<AnyCancellable> = []
 
     var windowTitle: String {
@@ -80,6 +81,7 @@ final class StudioModel: ObservableObject {
     private func schedulePrefixScan(force: Bool = false) {
         let input = config.input.trimmingCharacters(in: .whitespacesAndNewlines)
         if input.isEmpty {
+            prefixScanGeneration += 1
             prefixScanTask?.cancel()
             prefixScanIsRunning = false
             prefixScanResult = nil
@@ -91,6 +93,8 @@ final class StudioModel: ObservableObject {
             return
         }
 
+        prefixScanGeneration += 1
+        let generation = prefixScanGeneration
         prefixScanTask?.cancel()
         let rules = config.rules
         let root = PathKit.Path(input)
@@ -100,8 +104,10 @@ final class StudioModel: ObservableObject {
 
         prefixScanTask = Task.detached(priority: .userInitiated) {
             let scanner = PrefixScanner()
-            let result = scanner.scan(inputRoot: root, rules: rules)
+            let result = scanner.scan(inputRoot: root, rules: rules) { Task.isCancelled }
             await MainActor.run {
+                // 已经有更新的扫描在跑，丢掉这次结果。
+                guard generation == self.prefixScanGeneration else { return }
                 self.prefixScanResult = result
                 self.prefixScanIsRunning = false
             }

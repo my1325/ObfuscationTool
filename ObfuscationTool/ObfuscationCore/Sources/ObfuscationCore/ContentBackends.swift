@@ -28,6 +28,23 @@ public struct ContentProcessor: Sendable {
         return path.components.contains { $0.lowercased().hasSuffix(".xcassets") }
     }
 
+    /// `process` 是否可能返回与 `data` 不同的字节。
+    /// Swift、strings，以及资源目录里的 JSON 总会重新编码。
+    /// 其他文件只有在内容规则真的会改写 token 时才变化。
+    func mayRewriteContent(path: Path, rules: [Rule]) -> Bool {
+        let ext = (path.extension ?? "").lowercased()
+        switch ext {
+        case "swift", "strings":
+            return true
+        case "json":
+            return isAssetCatalogContentsJSON(path)
+        case "h", "m":
+            return rules.contains(where: hasTextHandler)
+        default:
+            return false
+        }
+    }
+
     public func process(
         path: Path,
         data: Data,
@@ -111,6 +128,18 @@ public struct ContentProcessor: Sendable {
         return ShuffleConfig(orderAware: orderAware)
     }
 
+    private func hasTextHandler(_ rule: Rule) -> Bool {
+        guard rule.enabled, rule.appliesTo.contains(.content) else { return false }
+        switch rule.kind {
+        case let .replace(map):
+            return !map.isEmpty
+        case .caseConvert:
+            return true
+        case .shuffle:
+            return false
+        }
+    }
+
     private func ruleToFileStringModes(_ rule: Rule) -> [FileStringHandlePlugin.HandleMode] {
         guard rule.enabled else { return [] }
         switch rule.kind {
@@ -160,14 +189,14 @@ public struct ContentProcessor: Sendable {
                     .sorted { $0.count > $1.count }
                     .reduce(current) { str, key in
                         let value = map[key] ?? ""
-                        return replaceString(str, key: key, value: value, onlyPrefix: rule.scope.onlyPrefix)
+                        return TextRewriter.replacing(str, key: key, value: value, onlyPrefix: rule.scope.onlyPrefix)
                     }
             case let .caseConvert(prefix, toLowercase, direction):
                 switch direction {
                 case .camelToSnake:
-                    return camelToSnake(current, prefix: prefix, toLowercase: toLowercase)
+                    return TextRewriter.camelToSnake(current, prefix: prefix, toLowercase: toLowercase)
                 case .snakeToCamel:
-                    return snakeToCamel(current, prefix: prefix, toLowercase: toLowercase)
+                    return TextRewriter.snakeToCamel(current, prefix: prefix, toLowercase: toLowercase)
                 }
             case .shuffle:
                 return current
@@ -180,9 +209,11 @@ public struct ContentProcessor: Sendable {
         switch rule.kind {
         case let .replace(map):
             let keys = map.keys.sorted { $0.count > $1.count }
+            let onlyPrefix = rule.scope.onlyPrefix
             return keys.map { key in
-                { token in
-                    self.replaceString(token, key: key, value: map[key] ?? "", onlyPrefix: rule.scope.onlyPrefix)
+                let value = map[key] ?? ""
+                return { token in
+                    TextRewriter.replacing(token, key: key, value: value, onlyPrefix: onlyPrefix)
                 }
             }
         case let .caseConvert(prefix, toLowercase, direction):
@@ -190,13 +221,13 @@ public struct ContentProcessor: Sendable {
             case .camelToSnake:
                 return [
                     { token in
-                        self.camelToSnake(token, prefix: prefix, toLowercase: toLowercase)
+                        TextRewriter.camelToSnake(token, prefix: prefix, toLowercase: toLowercase)
                     },
                 ]
             case .snakeToCamel:
                 return [
                     { token in
-                        self.snakeToCamel(token, prefix: prefix, toLowercase: toLowercase)
+                        TextRewriter.snakeToCamel(token, prefix: prefix, toLowercase: toLowercase)
                     },
                 ]
             }
@@ -211,7 +242,7 @@ public struct ContentProcessor: Sendable {
         handlers: [(String) -> String]
     ) -> String {
         var result = ""
-        result.reserveCapacity(source.count)
+        result.reserveCapacity(source.utf8.count)
         var token = ""
         token.reserveCapacity(64)
 
@@ -227,7 +258,7 @@ public struct ContentProcessor: Sendable {
                 handler(current)
             }
             result.append(contentsOf: newToken)
-            token = ""
+            token.removeAll(keepingCapacity: true)
         }
 
         while index < source.endIndex {
@@ -331,56 +362,6 @@ public struct ContentProcessor: Sendable {
 
         flushToken()
         return result
-    }
-
-    private func replaceString(
-        _ origin: String,
-        key: String,
-        value: String,
-        onlyPrefix: Bool
-    ) -> String {
-        if !onlyPrefix {
-            return origin.replacingOccurrences(of: key, with: value)
-        }
-        guard origin.hasPrefix(key), let range = origin.range(of: key) else { return origin }
-        return origin.replacingCharacters(in: range, with: value)
-    }
-
-    private func camelToSnake(
-        _ value: String,
-        prefix: String,
-        toLowercase: Bool
-    ) -> String {
-        guard value.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix(prefix) else { return value }
-        let replaced = value.replacingOccurrences(of: prefix, with: "_PREFIX_")
-        let withUnderscore = replaced.replacingOccurrences(
-            of: "([a-z])([A-Z])",
-            with: "$1_$2",
-            options: .regularExpression
-        )
-        if toLowercase {
-            return withUnderscore.lowercased().replacingOccurrences(of: "_prefix_", with: prefix)
-        }
-        return withUnderscore.capitalized.replacingOccurrences(of: "_Prefix_", with: prefix)
-    }
-
-    private func snakeToCamel(
-        _ value: String,
-        prefix: String,
-        toLowercase: Bool
-    ) -> String {
-        guard value.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix(prefix) else { return value }
-        if value.count(where: { $0 == "_" }) <= 1 { return value }
-        let replaced = value.replacingOccurrences(of: prefix, with: "PREFIX_")
-        var parts = replaced.components(separatedBy: "_")
-        let first = toLowercase ? 2 : 1
-        if parts.count > first {
-            for i in first..<parts.count {
-                guard !parts[i].isEmpty else { continue }
-                parts[i] = parts[i].prefix(1).uppercased() + parts[i].dropFirst()
-            }
-        }
-        return parts.joined().replacingOccurrences(of: "PREFIX", with: prefix)
     }
 }
 

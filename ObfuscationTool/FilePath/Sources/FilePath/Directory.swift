@@ -54,30 +54,31 @@ public extension DirectoryPathProtocol {
     }
     
     func remove() throws {
-        var fileStack: [String] = [path]
-        while !fileStack.isEmpty {
-            let file = fileStack.last!
-            
+        // 每个目录只列一次。原先对每个非空目录都调用 subpaths，那是整棵子树的递归列举。
+        var stack: [(path: String, listed: Bool)] = [(path, false)]
+        while let item = stack.last {
             var isDirectory: ObjCBool = false
-            guard FileManager.default.fileExists(atPath: file, isDirectory: &isDirectory) else {
-                fileStack.removeLast()
+            guard FileManager.default.fileExists(atPath: item.path, isDirectory: &isDirectory) else {
+                stack.removeLast()
                 continue
             }
-            
+
             if !isDirectory.boolValue {
-                try FileManager.default.removeItem(atPath: file)
-                fileStack.removeLast()
-            } else {
-                let subpaths = FileManager.default.subpaths(atPath: file) ?? []
-                if subpaths.isEmpty {
-                    try FileManager.default.removeItem(atPath: file)
-                    fileStack.removeLast()
-                } else {
-                    for subpath in subpaths {
-                        let fullPath = String(format: "%@/%@", file, subpath)
-                        fileStack.append(fullPath)
-                    }
-                }
+                try FileManager.default.removeItem(atPath: item.path)
+                stack.removeLast()
+                continue
+            }
+
+            if item.listed {
+                try FileManager.default.removeItem(atPath: item.path)
+                stack.removeLast()
+                continue
+            }
+
+            stack[stack.count - 1].listed = true
+            let children = (try? FileManager.default.contentsOfDirectory(atPath: item.path)) ?? []
+            for name in children {
+                stack.append((item.path + "/" + name, false))
             }
         }
     }

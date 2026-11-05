@@ -30,14 +30,16 @@ public struct PrefixScanner: Sendable {
 
     public func scan(
         inputRoot: Path,
-        rules: [Rule]
+        rules: [Rule],
+        isCancelled: @Sendable () -> Bool = { false }
     ) -> PrefixScanResult {
         let official = officialPrefixSet(from: rules)
 
         let files = enumerateSwiftFiles(inputRoot)
-        var buckets: [PrefixSymbolKind: [String: (count: Int, samples: [String])]] = [:]
+        var buckets: [PrefixSymbolKind: KindBuckets] = [:]
 
         for file in files {
+            if isCancelled() { break }
             guard let source: String = try? file.read() else { continue }
             var parser = Parser(source)
             let syntax = SourceFileSyntax.parse(from: &parser)
@@ -61,10 +63,10 @@ public struct PrefixScanner: Sendable {
 
         let hitsByKind: [PrefixSymbolKind: [PrefixHit]] = Dictionary(
             uniqueKeysWithValues: PrefixSymbolKind.allCases.map { kind in
-                let map = buckets[kind] ?? [:]
+                let map = buckets[kind]?.byPrefix ?? [:]
                 let hits = map
                     .map { key, value in
-                        PrefixHit(prefix: key, count: value.count, samples: Array(value.samples.prefix(10)))
+                        PrefixHit(prefix: key, count: value.count, samples: value.samples)
                     }
                     .sorted {
                         if $0.count != $1.count { return $0.count > $1.count }
@@ -113,36 +115,26 @@ public struct PrefixScanner: Sendable {
         guard root.exists else { return [] }
         if root.isFile { return root.extension == "swift" ? [root] : [] }
 
-        let fm = FileManager.default
-        let base = root.string
-        let enumerator = fm.enumerator(atPath: base)
-        var files: [Path] = []
-
-        while let rel = enumerator?.nextObject() as? String {
-            if rel.split(separator: "/").contains(where: { $0.hasPrefix(".") }) {
-                enumerator?.skipDescendants()
-                continue
-            }
-            let p = Path(base + "/" + rel)
-            if p.isDirectory { continue }
-            if p.isFile, p.extension == "swift" {
-                files.append(p)
-            }
-        }
-        return files
+        return TreeEnumeration.collect(
+            under: root,
+            includeDirectories: { _ in false },
+            includeFiles: { $0.extension == "swift" }
+        ).map(\.path)
     }
 
     // MARK: - Node classification
 
     private func classify(_ node: SyntaxProtocol) -> (PrefixSymbolKind?, String?) {
-        if let n = node as? ClassDeclSyntax { return (.typeClass, n.name.text) }
-        if let n = node as? StructDeclSyntax { return (.typeStruct, n.name.text) }
-        if let n = node as? EnumDeclSyntax { return (.typeEnum, n.name.text) }
-        if let n = node as? ProtocolDeclSyntax { return (.typeProtocol, n.name.text) }
-        if let n = node as? ActorDeclSyntax { return (.typeActor, n.name.text) }
-        if let n = node as? FunctionDeclSyntax { return (.function, n.name.text) }
-        if let n = node as? VariableDeclSyntax { return (.variable, n.syntaxName) }
-        return (nil, nil)
+        switch node._syntaxNode.as(SyntaxEnum.self) {
+        case let .classDecl(n): return (.typeClass, n.name.text)
+        case let .structDecl(n): return (.typeStruct, n.name.text)
+        case let .enumDecl(n): return (.typeEnum, n.name.text)
+        case let .protocolDecl(n): return (.typeProtocol, n.name.text)
+        case let .actorDecl(n): return (.typeActor, n.name.text)
+        case let .functionDecl(n): return (.function, n.name.text)
+        case let .variableDecl(n): return (.variable, n.syntaxName)
+        default: return (nil, nil)
+        }
     }
 
     // MARK: - Prefix heuristic
@@ -159,20 +151,47 @@ public struct PrefixScanner: Sendable {
         return prefix
     }
 
+    /// 用类保存计数，避免每次命中都复制整张前缀表。
+    /// 以前每个符号都会拷贝一次字典，扫描成本随命中数变成平方。
+    private final class PrefixBucket {
+        var count = 0
+        var samples: [String] = []
+    }
+
+    private final class KindBuckets {
+        var byPrefix: [String: PrefixBucket] = [:]
+
+        func add(prefix: String, sample: String) {
+            let bucket: PrefixBucket
+            if let existing = byPrefix[prefix] {
+                bucket = existing
+            } else {
+                let created = PrefixBucket()
+                byPrefix[prefix] = created
+                bucket = created
+            }
+            bucket.count += 1
+            if bucket.samples.count < 10, !bucket.samples.contains(sample) {
+                bucket.samples.append(sample)
+            }
+        }
+    }
+
     private func addHit(
         kind: PrefixSymbolKind,
         prefix: String,
         sample: String,
-        to buckets: inout [PrefixSymbolKind: [String: (count: Int, samples: [String])]]
+        to buckets: inout [PrefixSymbolKind: KindBuckets]
     ) {
-        var map = buckets[kind] ?? [:]
-        var entry = map[prefix] ?? (0, [])
-        entry.count += 1
-        if entry.samples.count < 10, !entry.samples.contains(sample) {
-            entry.samples.append(sample)
+        let kindBucket: KindBuckets
+        if let existing = buckets[kind] {
+            kindBucket = existing
+        } else {
+            let created = KindBuckets()
+            buckets[kind] = created
+            kindBucket = created
         }
-        map[prefix] = entry
-        buckets[kind] = map
+        kindBucket.add(prefix: prefix, sample: sample)
     }
 }
 
