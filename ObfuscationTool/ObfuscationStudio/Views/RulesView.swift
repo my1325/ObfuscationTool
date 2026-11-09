@@ -47,7 +47,7 @@ struct RulesView: View {
                 }
             }
             .padding(12)
-            .frame(minWidth: 240, idealWidth: 280, maxHeight: .infinity)
+            .frame(minWidth: 136, idealWidth: 156, maxHeight: .infinity)
 
             Group {
                 if let id = model.selectedRuleID,
@@ -61,7 +61,7 @@ struct RulesView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .frame(minWidth: 360, maxHeight: .infinity)
+            .frame(minWidth: 188, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationSubtitle("规则")
@@ -263,7 +263,7 @@ private struct ReplaceEditor: View {
                     }
                 }
             }
-            .frame(minHeight: 220)
+            .frame(minHeight: 120)
         }
     }
 

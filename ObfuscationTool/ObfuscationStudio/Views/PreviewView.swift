@@ -55,6 +55,6 @@ struct PreviewView: View {
                     .textSelection(.enabled)
             }
         }
-        .frame(minWidth: 240)
+        .frame(minWidth: 120)
     }
 }

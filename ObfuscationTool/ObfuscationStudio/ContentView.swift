@@ -20,7 +20,7 @@ struct ContentView: View {
                 }
             }
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 200, ideal: 230, max: 300)
+            .navigationSplitViewColumnWidth(min: 128, ideal: 144, max: 168)
         } detail: {
             detail
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

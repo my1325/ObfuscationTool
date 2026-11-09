@@ -53,7 +53,7 @@ struct ConfigView: View {
                 }
             }
             .padding(20)
-            .frame(maxWidth: 720, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationSubtitle("路径")
     }
