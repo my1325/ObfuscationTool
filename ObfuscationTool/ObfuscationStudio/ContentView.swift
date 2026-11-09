@@ -54,7 +54,6 @@ struct ContentView: View {
                 }
             }
         }
-        .frame(minWidth: 880, minHeight: 560)
     }
 
     @ViewBuilder
