@@ -5,46 +5,66 @@ struct RulesView: View {
     @EnvironmentObject private var model: StudioModel
 
     var body: some View {
-        NavigationSplitView {
-            List(selection: $model.selectedRuleID) {
-                ForEach(model.config.rules) { rule in
-                    HStack {
-                        Toggle("", isOn: bindingEnabled(rule.id))
-                            .labelsHidden()
-                        Text(ruleTitle(rule))
-                            .lineLimit(1)
+        HSplitView {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Menu("添加") {
+                        Button("替换") { model.ensureSingletonRule(.replace) }
+                            .disabled(model.hasSingletonRule(.replace))
+                        Button("大小写") { model.ensureSingletonRule(.caseConvert) }
+                            .disabled(model.hasSingletonRule(.caseConvert))
+                        Button("打乱结构") { model.ensureSingletonRule(.shuffle) }
+                            .disabled(model.hasSingletonRule(.shuffle))
                     }
-                    .tag(rule.id)
+                    Button("删除") { model.deleteSelectedRule() }
+                        .disabled(model.selectedRuleID == nil)
+                    Spacer()
                 }
-                .onMove(perform: model.moveRules)
+
+                if model.config.rules.isEmpty {
+                    Text("还没有规则。替换用来改前缀，大小写用来改命名风格，打乱结构只作用于 Swift。")
+                        .foregroundColor(.secondary)
+                        .padding(.top, 8)
+                    Spacer()
+                } else {
+                    List(selection: $model.selectedRuleID) {
+                        ForEach(model.config.rules) { rule in
+                            HStack {
+                                Toggle("", isOn: bindingEnabled(rule.id))
+                                    .labelsHidden()
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(ruleTitle(rule))
+                                        .lineLimit(1)
+                                    Text(rule.appliesToSummary)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .tag(rule.id)
+                        }
+                        .onMove(perform: model.moveRules)
+                    }
+                }
             }
-            .toolbar {
-                Button("添加 Replace") {
-                    model.ensureSingletonRule(.replace)
+            .padding(12)
+            .frame(minWidth: 136, idealWidth: 156, maxHeight: .infinity)
+
+            Group {
+                if let id = model.selectedRuleID,
+                   let idx = model.config.rules.firstIndex(where: { $0.id == id })
+                {
+                    RuleDetailView(rule: $model.config.rules[idx])
+                        .padding(20)
+                } else {
+                    Text("选择一条规则，或从左上角添加。")
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .disabled(model.hasSingletonRule(.replace))
-                Button("添加 CaseConvert") {
-                    model.ensureSingletonRule(.caseConvert)
-                }
-                .disabled(model.hasSingletonRule(.caseConvert))
-                Button("添加 Shuffle") {
-                    model.ensureSingletonRule(.shuffle)
-                }
-                .disabled(model.hasSingletonRule(.shuffle))
-                Button("删除") { model.deleteSelectedRule() }
-                    .disabled(model.selectedRuleID == nil)
             }
-        } detail: {
-            if let id = model.selectedRuleID,
-               let idx = model.config.rules.firstIndex(where: { $0.id == id })
-            {
-                RuleDetailView(rule: $model.config.rules[idx])
-                    .padding()
-            } else {
-                Text("选择一条规则进行编辑")
-                    .foregroundColor(.secondary)
-            }
+            .frame(minWidth: 188, maxHeight: .infinity)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .navigationSubtitle("规则")
     }
 
     private func bindingEnabled(_ id: Rule.ID) -> Binding<Bool> {
@@ -60,11 +80,30 @@ struct RulesView: View {
     private func ruleTitle(_ rule: Rule) -> String {
         switch rule.kind {
         case .replace:
-            return "Replace"
+            return "替换"
         case let .caseConvert(prefix, _, direction):
-            return "CaseConvert(\(direction.rawValue)) \(prefix)"
+            let name = direction == .camelToSnake ? "驼峰 → 下划线" : "下划线 → 驼峰"
+            return prefix.isEmpty ? name : "\(name) · \(prefix)"
         case .shuffle:
-            return "Shuffle"
+            return "打乱结构"
+        }
+    }
+}
+
+private extension Rule {
+    var appliesToSummary: String {
+        switch kind {
+        case .shuffle:
+            return "Swift 声明顺序"
+        case .replace, .caseConvert:
+            let path = appliesTo.contains(.path)
+            let content = appliesTo.contains(.content)
+            switch (path, content) {
+            case (true, true): return "路径和内容"
+            case (true, false): return "只改路径"
+            case (false, true): return "只改内容"
+            case (false, false): return "未选择作用范围"
+            }
         }
     }
 }
@@ -73,22 +112,10 @@ private struct RuleDetailView: View {
     @Binding var rule: Rule
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("作用范围")
-                Spacer()
-                targetsRow
-            }
-            .onAppear { sanitizeTargets() }
-            .onChange(of: rule.kind) { _ in sanitizeTargets() }
-
-            if supportsOnlyPrefix {
-                Toggle("onlyPrefix", isOn: $rule.scope.onlyPrefix)
-            }
-
-            if supportsOnlyFilename {
-                Toggle("onlyFilename", isOn: $rule.scope.onlyFilename)
-            }
+        VStack(alignment: .leading, spacing: 16) {
+            targetsRow
+                .onAppear { sanitizeTargets() }
+                .onChange(of: rule.kind) { _ in sanitizeTargets() }
 
             Divider()
 
@@ -103,51 +130,47 @@ private struct RuleDetailView: View {
                 ))
 
             case let .caseConvert(prefix, toLowercase, direction):
-                VStack(alignment: .leading) {
-                    Picker("direction", selection: Binding(
+                VStack(alignment: .leading, spacing: 12) {
+                    Picker("方向", selection: Binding(
                         get: { direction },
                         set: { rule.kind = .caseConvert(prefix: prefix, toLowercase: toLowercase, direction: $0) }
                     )) {
-                        ForEach(CaseConvertDirection.allCases, id: \.self) { dir in
-                            Text(dir.rawValue).tag(dir)
-                        }
+                        Text("驼峰 → 下划线").tag(CaseConvertDirection.camelToSnake)
+                        Text("下划线 → 驼峰").tag(CaseConvertDirection.snakeToCamel)
                     }
                     .pickerStyle(.segmented)
 
-                    TextField("prefix", text: Binding(
+                    TextField("前缀，例如 BF_", text: Binding(
                         get: { prefix },
                         set: { rule.kind = .caseConvert(prefix: $0, toLowercase: toLowercase, direction: direction) }
                     ))
-                    Toggle("toLowercase", isOn: Binding(
+                    Toggle("结果改为小写", isOn: Binding(
                         get: { toLowercase },
                         set: { rule.kind = .caseConvert(prefix: prefix, toLowercase: $0, direction: direction) }
                     ))
+                    Text("只处理带这个前缀的名字。关闭「结果改为小写」时，会把每段首字母大写。")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
 
             case .shuffle:
-                Text("Shuffle = Swift 结构重排（仅对 Swift 文件内容生效）")
+                Text("打乱 Swift 类型里声明的顺序。不改名字，也不处理 Objective-C。")
                     .foregroundColor(.secondary)
             }
+
+            Spacer()
         }
-    }
-
-    private var supportsOnlyPrefix: Bool {
-        return false
-    }
-
-    private var supportsOnlyFilename: Bool {
-        false
     }
 
     private var targetsRow: some View {
         Group {
             if isShuffleRule {
-                Text("Swift 结构重排")
-                    .font(.system(.body, design: .monospaced))
+                Label("只作用于 Swift 结构", systemImage: "arrow.up.arrow.down")
                     .foregroundColor(.secondary)
             } else {
-                HStack(spacing: 12) {
-                    Toggle("文件名/路径", isOn: Binding(
+                HStack(spacing: 16) {
+                    Text("作用于")
+                    Toggle("路径和文件名", isOn: Binding(
                         get: { rule.appliesTo.contains(.path) },
                         set: { updateTarget(.path, enabled: $0) }
                     ))
@@ -212,33 +235,43 @@ private struct ReplaceEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Text("较长的原文会先替换。")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
             HStack {
-                TextField("origin", text: $newKey)
-                TextField("replace", text: $newValue)
-                Button("添加") {
-                    guard !newKey.isEmpty else { return }
-                    map[newKey] = newValue
-                    newKey = ""
-                    newValue = ""
-                }
+                TextField("原文，例如 BF_", text: $newKey)
+                TextField("换成", text: $newValue)
+                Button("添加") { addPair() }
+                    .disabled(newKey.isEmpty)
             }
 
             List {
                 ForEach(map.keys.sorted { $0.count > $1.count }, id: \.self) { key in
                     HStack {
-                        Text(key).font(.system(.body, design: .monospaced))
-                        Spacer()
-                        Text(map[key] ?? "")
+                        Text(key)
                             .font(.system(.body, design: .monospaced))
-                            .foregroundColor(.secondary)
+                            .frame(minWidth: 80, alignment: .leading)
+                        TextField("换成", text: Binding(
+                            get: { map[key] ?? "" },
+                            set: { map[key] = $0 }
+                        ))
+                        .font(.system(.body, design: .monospaced))
                         Button("删除") {
                             map.removeValue(forKey: key)
                         }
                     }
                 }
             }
-            .frame(minHeight: 200)
+            .frame(minHeight: 120)
         }
     }
-}
 
+    private func addPair() {
+        let key = newKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !key.isEmpty else { return }
+        map[key] = newValue
+        newKey = ""
+        newValue = ""
+    }
+}
