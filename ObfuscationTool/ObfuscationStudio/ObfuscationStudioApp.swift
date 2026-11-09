@@ -1,8 +1,8 @@
 import SwiftUI
 
 enum StudioWindow {
-    /// 内容区域固定尺寸。侧边栏约 230，右侧够放下规则分栏和预览对照。
-    static let contentSize = NSSize(width: 960, height: 640)
+    /// 内容区域固定尺寸，不含标题栏。最小、最大尺寸钉在同一帧上。
+    static let contentSize = NSSize(width: 720, height: 480)
 }
 
 @main
